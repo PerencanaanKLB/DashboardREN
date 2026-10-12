@@ -58,7 +58,7 @@ dialog{border:1px solid var(--line);border-radius:16px;padding:0;width:min(520px
 dialog::backdrop{background:rgba(8,20,40,.55)}
 .mh{padding:16px 20px;border-bottom:1px solid var(--line);font-weight:700;font-size:16px}
 .mb{padding:16px 20px;display:grid;gap:12px}.mb label{font-size:12px;font-weight:600;color:var(--mut);display:grid;gap:5px}
-.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.r3{display:grid;grid-template-columns:.8fr 1.5fr 1fr;gap:6px}.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .mf{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
 .note{font-size:12px;color:var(--mut);margin-top:14px}
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13px;display:none}
@@ -103,7 +103,7 @@ dialog::backdrop{background:rgba(8,20,40,.55)}
 <dialog id="dlg"><div class="mh" id="mt">Pekerjaan</div><div class="mb">
  <label>Nama Pekerjaan<input id="f-name"></label>
  <div class="r2"><label>Sub Bidang<select id="f-sub"></select></label><label>PIC<input id="f-pic"></label></div>
- <div class="r2"><label>Status<select id="f-st"><option>On Track</option><option>Berisiko</option><option>Terlambat</option><option>Selesai</option></select></label><label>Due Date<input type="date" id="f-due"></label></div>
+ <div class="r2"><label>Status<select id="f-st"><option>On Track</option><option>Berisiko</option><option>Terlambat</option><option>Selesai</option></select></label><label>Due Date<div class="r3"><select id="f-dd"></select><select id="f-dm"></select><select id="f-dy"></select></div></label></div>
  <label>Progress: <span id="pv">0%</span><input type="range" id="f-pr" min="0" max="100" step="5"></label>
  <label>Issue / Kendala<textarea id="f-is" rows="3" placeholder="Kosongkan jika tidak ada issue"></textarea></label>
 </div><div class="mf"><button class="btn d" data-act="del" id="bdel">Hapus</button><button class="btn g" data-act="cancel">Batal</button><button class="btn" data-act="save">Simpan</button></div></dialog>
@@ -147,13 +147,23 @@ function render(){
  else em.style.display="none";
  $("add").style.display=canWrite?"":"none";
 }
+const BLN=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+(()=>{const y=new Date().getFullYear();let o='<option value="">Tahun</option>';for(let k=y-1;k<=y+6;k++)o+=`<option>${k}</option>`;
+$("f-dd").innerHTML='<option value="">Tgl</option>'+Array.from({length:31},(_,i)=>`<option>${i+1}</option>`).join("");
+$("f-dm").innerHTML='<option value="">Bulan</option>'+BLN.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");$("f-dy").innerHTML=o})();
+function setDue(v){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||""),y=m?m[1]:"";
+ if(y&&![...$("f-dy").options].some(o=>o.value===y))$("f-dy").add(new Option(y,y));
+ $("f-dd").value=m?String(+m[3]):"";$("f-dm").value=m?String(+m[2]):"";$("f-dy").value=y}
+function getDue(){const d=$("f-dd").value,m=$("f-dm").value,y=$("f-dy").value;if(!d&&!m&&!y)return"";if(!d||!m||!y)return null;
+ if(new Date(+y,+m-1,+d).getMonth()!==+m-1)return null;return y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")}
 function openDlg(id){
  editId=id;const j=id?jobs.find(x=>x.id===id):{name:"",sub:fsub!=="Semua"?fsub:SUBS[0],pic:"",prog:0,st:"On Track",issue:"",due:""};
- $("mt").textContent=id?"Ubah Pekerjaan":"Tambah Pekerjaan";$("f-name").value=j.name;$("f-sub").value=j.sub;$("f-pic").value=j.pic;$("f-st").value=j.st;$("f-due").value=j.due||"";$("f-pr").value=j.prog;$("pv").textContent=j.prog+"%";$("f-is").value=j.issue||"";
+ $("mt").textContent=id?"Ubah Pekerjaan":"Tambah Pekerjaan";$("f-name").value=j.name;$("f-sub").value=j.sub;$("f-pic").value=j.pic;$("f-st").value=j.st;setDue(j.due);$("f-pr").value=j.prog;$("pv").textContent=j.prog+"%";$("f-is").value=j.issue||"";
  $("bdel").style.display=id?"":"none";$("dlg").showModal();
 }
 async function save(){
- const d={name:$("f-name").value.trim(),sub:$("f-sub").value,pic:$("f-pic").value.trim(),st:$("f-st").value,due:$("f-due").value,prog:+$("f-pr").value,issue:$("f-is").value.trim(),upd:new Date().toISOString().slice(0,10)};
+ const due=getDue();if(due===null){toast("Due Date tidak lengkap atau tidak valid");return}
+ const d={name:$("f-name").value.trim(),sub:$("f-sub").value,pic:$("f-pic").value.trim(),st:$("f-st").value,due:due,prog:+$("f-pr").value,issue:$("f-is").value.trim(),upd:new Date().toISOString().slice(0,10)};
  if(!d.name){toast("Nama pekerjaan wajib diisi");return}
  if(d.st==="Selesai")d.prog=100;
  try{
