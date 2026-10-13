@@ -287,10 +287,11 @@ $("q").oninput=render;$("fst").onchange=render;$("f-pr").oninput=e=>$("pv").text
 $("f-sub").innerHTML=SUBS.map(s=>`<option>${s}</option>`).join("");
 $("today").textContent=new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 function local(msg){db=null;loaded=true;$("note").textContent=msg;render()}
-const API="https://script.google.com/macros/s/AKfycbz3hvCfbSAn8e9IhLEGpzcC007Eb68ql-rZviIyp_9UflSZVYdb-VN3lucKvA5wdtLcsg/exec",K="dash-sheet-v2";
+const API="https://script.google.com/macros/s/AKfycbzHNT711kBviyFnSxvqA92DcbMFCsp8GZyyJCIgolSiS5J75CVoYnC4Qfvv7jbZHqzs/exec",K="dash-sheet-v2";
 let rows=[],photos={},pv="",pending=0,fetching=false,hadCache=false,pics={},xtra={};
 try{const s=JSON.parse(localStorage.getItem(K)||"null");if(s&&Array.isArray(s.rows)){rows=s.rows;photos=s.photos||{};pv=s.pv||"";pics=s.pics||{};hadCache=true}}catch(e){}
-function warnV(){$("note").textContent="⚠ Code.gs di Google Apps Script belum versi terbaru, sehingga Pekerjaan Utama, foto, dan email PIC belum berfungsi. Lihat PANDUAN.md.";$("note").style.color="var(--late)"}
+function diag(m){$("note").textContent="⚠ "+m;$("note").style.color="var(--late)"}
+function warnV(v){diag("Web App ...("+API.split("/s/")[1].split("/")[0].slice(-8)+") menjawab dengan kode "+(v?"versi "+v:"lama tanpa nomor versi")+", padahal dibutuhkan versi 3. Simpan Code.gs, lalu Deploy sebagai Versi baru.")}
 const MM={sent:"Email notifikasi terkirim ke PIC.",email_pic_belum_ada:"Tersimpan, tetapi PIC belum punya email.",kuota_email_habis:"Tersimpan, tetapi kuota email harian habis.",email_tidak_valid_atau_domain_tidak_diizinkan:"Tersimpan, tetapi email tidak valid atau domainnya tidak diizinkan.",gagal_kirim:"Tersimpan, tetapi email gagal dikirim.",terlalu_sering:"Pengingat baru saja dikirim. Coba lagi nanti."};
 function mailToast(m){toast(MM[m]||m)}
 function mkDb(){
@@ -301,8 +302,10 @@ function mkDb(){
  const refresh=async()=>{
   if(fetching||pending)return;fetching=true;
   try{
-   const j=await(await fetch(API+"?a=list&t="+Date.now())).json();if(!j.ok)throw 0;
-   if(!j.v||j.v<3)warnV();
+   const tx=await(await fetch(API+"?a=list&t="+Date.now())).text();let j;
+   try{j=JSON.parse(tx)}catch(e){diag("Web App tidak mengembalikan data. Awal respons: "+tx.replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,100));throw 0}
+   if(!j.ok){diag("Web App menolak permintaan: "+(j.error||"galat"));throw 0}
+   if(!j.v||j.v<3)warnV(j.v);else if($("note").style.color){$("note").style.color="";$("note").textContent="Data tersambung ke Google Sheet dan diperbarui otomatis."}
    if(!pending){rows=j.rows;if(j.pics)pics=j.pics;emit();
     if(j.v>=2&&j.pv!==pv){const p=await(await fetch(API+"?a=photos&t="+Date.now())).json();if(p.ok&&!pending){photos=p.photos;sent={...photos};pv=j.pv;emit()}}}
   }catch(e){eb&&eb()}finally{fetching=false}
