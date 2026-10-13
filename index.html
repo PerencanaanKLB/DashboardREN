@@ -107,6 +107,18 @@ th{position:sticky;top:0;z-index:2;font-size:12px}td{padding:11px 14px;font-size
 @media(max-width:1200px){.band{grid-template-columns:1fr}}
 @media(max-width:800px){html,body{height:auto}body{overflow:auto;display:block}main{display:block;padding:12px}main>.wrap{display:block}.lst{display:block}.band{margin-bottom:12px}header .top{flex-wrap:wrap}.ttl{text-align:left;flex-basis:100%;order:3}.lst .tw{overflow-x:auto}}
 @media(max-width:560px){h1{font-size:22px}.r2{grid-template-columns:1fr}}
+@media(max-width:700px){
+.band .kpi{grid-template-columns:repeat(2,minmax(0,1fr))}.band .subs{grid-template-columns:repeat(3,minmax(0,1fr))}.sc .meta{display:none}.sc b{font-size:11px}.sc .big{font-size:18px}.sc .row{flex-direction:column;align-items:flex-start;margin:0}.ttl h1{white-space:normal;font-size:18px}.band .k-v{font-size:22px}
+.bar2 .tools{flex-wrap:wrap}.bar2 .tools input{flex:1 1 100%;max-width:none}
+.lst .tw{overflow:visible;border:0;box-shadow:none;background:transparent}
+table{min-width:0;display:block}thead{display:none}tbody{display:block}
+tr{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:10px}
+td{display:flex;justify-content:space-between;align-items:center;gap:12px;border:0;padding:5px 0;background:transparent!important;text-align:right}
+td::before{font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;flex:none;text-align:left}
+td:nth-child(1)::before{content:"Pekerjaan Utama"}td:nth-child(2)::before{content:"Nama Pekerjaan"}td:nth-child(3)::before{content:"Sub Bidang"}td:nth-child(4)::before{content:"PIC"}td:nth-child(5)::before{content:"Progress"}td:nth-child(6)::before{content:"Status"}td:nth-child(7)::before{content:"Due Date"}td:nth-child(8)::before{content:"Issue"}
+td:nth-child(9)::before{display:none}td:nth-child(9){justify-content:flex-end}
+.pg{min-width:0;flex:1;max-width:60%}.iss{max-width:none}main{padding:10px}
+}
 </style>
 </head>
 <body>
@@ -118,7 +130,7 @@ th{position:sticky;top:0;z-index:2;font-size:12px}td{padding:11px 14px;font-size
  <div class="tools">
   <input id="q" placeholder="Cari pekerjaan, PIC, atau issue…">
   <select id="fst"><option>Semua Status</option><option>On Track</option><option>Berisiko</option><option>Terlambat</option><option>Selesai</option></select>
-  <div class="dm"><button class="btn g" id="datab">Data ▾</button><div class="pop" id="datapop"><button class="btn g" data-act="imp" title="Impor dari CSV atau unduhan Google Sheet">Impor CSV</button><button class="btn g" data-act="exp">Ekspor CSV</button><button class="btn g" data-act="savef" title="Unduh index.html berisi data terbaru untuk diunggah ke GitHub">Simpan ke file</button></div></div><input type="file" id="csvf" accept=".csv,text/csv,text/plain" hidden>
+  <div class="dm"><button class="btn g" id="datab">Data ▾</button><div class="pop" id="datapop"><button class="btn g" data-act="imp" title="Impor dari CSV atau unduhan Google Sheet">Impor CSV</button><button class="btn g" data-act="exp">Ekspor CSV</button></div></div><input type="file" id="csvf" accept=".csv,text/csv,text/plain" hidden>
   <button class="btn" id="add" data-act="add">+ Tambah</button>
  </div></div>
  <div class="card tw"><table><thead><tr><th>Pekerjaan Utama</th><th>Nama Pekerjaan</th><th>Sub Bidang</th><th>PIC</th><th>Progress</th><th>Status</th><th>Due Date</th><th>Issue</th><th></th></tr></thead><tbody id="tb"></tbody></table><div class="empty" id="empty" style="display:none"></div></div></div>
@@ -199,7 +211,7 @@ function setMain(v){const o=MAINS.includes(v);$("f-main").value=o?v:(v?"Lain-Lai
 function getMain(){const m=$("f-main").value;return m==="Lain-Lain"?($("f-mo").value.trim()||"Lain-Lain"):m}
 function avatar(n){const p=photos[n];return p&&/^data:image\//.test(p)?`<img class="av" src="${p}" alt="">`:`<span class="av">${esc(ini(n||"?"))}</span>`}
 function showAv(){const n=$("f-pic").value.trim(),p=pend===undefined?photos[n]:pend;$("f-av").innerHTML=p&&/^data:image\//.test(p)?`<img class="av" src="${p}" alt="">`:`<span class="av">${esc(ini(n||"?"))}</span>`}
-function readPhoto(f){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const s=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=160;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,160,160);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",.85))};im.onerror=()=>rej();im.src=u})}
+function readPhoto(f){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const s=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=128;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,128,128);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",.8))};im.onerror=()=>rej();im.src=u})}
 $("f-main").onchange=togMain;$("f-pic").oninput=showAv;
 $("pf").onchange=e=>{const f=e.target.files[0];e.target.value="";if(f)readPhoto(f).then(d=>{pend=d;showAv()}).catch(()=>toast("Gambar tidak bisa dibaca"))};
 function openDlg(id){
@@ -234,7 +246,7 @@ document.addEventListener("click",e=>{
  else if(a==="add")openDlg(null);else if(a==="edit")openDlg(v);
  else if(a==="save")save();else if(a==="del")del();else if(a==="seed")seed();
  else if(a==="cancel")$("dlg").close();
- else if(a==="imp")$("csvf").click();else if(a==="exp")dl("monitoring-pekerjaan.csv",toCSV(),"text/csv;charset=utf-8");else if(a==="savef")saveFile();
+ else if(a==="imp")$("csvf").click();else if(a==="exp")dl("monitoring-pekerjaan.csv",toCSV(),"text/csv;charset=utf-8");
  else if(a==="photo"){if(!$("f-pic").value.trim())toast("Isi nama PIC dulu");else $("pf").click()}else if(a==="nophoto"){pend=null;showAv()}
 });
 const PRE=[["Biru Korporat","#0B3C6D"],["Teal","#0F766E"],["Hijau","#15803D"],["Merah Marun","#9F1239"],["Ungu","#5B21B6"],["Oranye","#C2410C"],["Kuning Emas","#F5B301"],["Slate","#1E293B"]],DEF="#0B3C6D";
@@ -266,19 +278,36 @@ $("q").oninput=render;$("fst").onchange=render;$("f-pr").oninput=e=>$("pv").text
 $("f-sub").innerHTML=SUBS.map(s=>`<option>${s}</option>`).join("");
 $("today").textContent=new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 function local(msg){db=null;loaded=true;$("note").textContent=msg;render()}
-const K="dash-local-v1";
-/*DATA_START*/const DATA_VERSION="init",DATA=[],PHOTOS={};/*DATA_END*/
-let rows=null,photos={...PHOTOS};
-try{const s=JSON.parse(localStorage.getItem(K)||"null");if(s&&s.ver===DATA_VERSION&&Array.isArray(s.rows)){rows=s.rows;photos=s.photos||{}}}catch(e){}
-if(!rows)rows=DATA.map((r,i)=>({...r,id:"d"+i}));
-function mkLocalDb(){
- let cb=null,n=Date.now();
- const save=()=>{try{localStorage.setItem(K,JSON.stringify({ver:DATA_VERSION,rows,photos}))}catch(e){}};
- const emit=()=>cb&&cb({docs:rows.map(r=>({id:r.id,data:()=>r}))});
+const API="https://script.google.com/macros/s/AKfycbz3hvCfbSAn8e9IhLEGpzcC007Eb68ql-rZviIyp_9UflSZVYdb-VN3lucKvA5wdtLcsg/exec",K="dash-sheet-v2";
+let rows=[],photos={},pv="",pending=0,fetching=false,hadCache=false;
+try{const s=JSON.parse(localStorage.getItem(K)||"null");if(s&&Array.isArray(s.rows)){rows=s.rows;photos=s.photos||{};pv=s.pv||"";hadCache=true}}catch(e){}
+function warnV(){$("note").textContent="⚠ Code.gs di Google Apps Script belum versi terbaru: Pekerjaan Utama dan foto belum tersimpan. Lihat PANDUAN.md.";$("note").style.color="var(--late)"}
+function mkDb(){
+ let cb=null,eb=null,sent={...photos},q=Promise.resolve();
+ const persist=()=>{try{localStorage.setItem(K,JSON.stringify({rows,photos,pv}))}catch(e){}};
+ const emit=()=>{persist();cb&&cb({docs:rows.map(r=>({id:r.id,data:()=>r}))})};
+ const post=async b=>{const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(b)});const j=await r.json();if(!j.ok)throw new Error(j.error||"error");return j};
+ const refresh=async()=>{
+  if(fetching||pending)return;fetching=true;
+  try{
+   const j=await(await fetch(API+"?a=list&t="+Date.now())).json();if(!j.ok)throw 0;
+   if(!j.v||j.v<2)warnV();
+   if(!pending){rows=j.rows;emit();
+    if(j.v>=2&&j.pv!==pv){const p=await(await fetch(API+"?a=photos&t="+Date.now())).json();if(p.ok&&!pending){photos=p.photos;sent={...photos};pv=j.pv;emit()}}}
+  }catch(e){eb&&eb()}finally{fetching=false}
+ };
+ const send=b=>{pending++;q=q.then(async()=>{for(let i=0;i<3;i++){try{await post(b);return}catch(e){await new Promise(r=>setTimeout(r,700*(i+1)))}}toast("Gagal menyimpan ke Google Sheet. Data dimuat ulang.")}).then(()=>{pending--;if(!pending)refresh()})};
+ const photoSync=()=>{for(const k of Object.keys(photos))if(sent[k]!==photos[k]){sent[k]=photos[k];send({action:"setPhoto",pic:k,photo:photos[k]})}for(const k of Object.keys(sent))if(!(k in photos)){delete sent[k];send({action:"setPhoto",pic:k,photo:""})}};
+ const nid=()=>"n"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
  return{
-  collection:()=>({add:async d=>{rows.push({...d,id:"n"+(++n)});save();emit()},onSnapshot:f=>{cb=f;emit()}}),
-  doc:p=>{const id=p.split("/")[1];return{set:async d=>{rows=rows.map(r=>r.id===id?{...d,id}:r);save();emit()},delete:async()=>{rows=rows.filter(r=>r.id!==id);save();emit()}}},
-  replace:a=>{rows=a.map((r,i)=>({...r,id:"i"+n+i}));save();emit()}
+  collection:()=>({
+   add:async d=>{const id=nid();rows.push({...d,id});emit();photoSync();send({action:"add",id,data:d})},
+   onSnapshot:(f,e)=>{cb=f;eb=e;if(hadCache)emit();refresh();setInterval(()=>{if(!document.hidden)refresh()},30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh()})}
+  }),
+  doc:p=>{const id=p.split("/")[1];return{
+   set:async d=>{rows=rows.map(r=>r.id===id?{...d,id}:r);emit();photoSync();send({action:"set",id,data:d})},
+   delete:async()=>{rows=rows.filter(r=>r.id!==id);emit();send({action:"delete",id})}}},
+  replace:a=>{rows=a.map((r,i)=>({...r,id:nid()+i}));emit();send({action:"replace",rows})}
  };
 }
 const HDR=["Pekerjaan Utama","Nama Pekerjaan","Sub Bidang","PIC","Progress","Status","Due Date","Issue"];
@@ -317,23 +346,14 @@ function importCSV(text){
  if(!confirm("Impor "+out.length+" pekerjaan? Data yang ada sekarang akan diganti."))return;
  db.replace(out);toast(out.length+" pekerjaan diimpor");
 }
-async function saveFile(){
- try{
-  const src=await(await fetch(location.href.split("#")[0],{cache:"no-store"})).text();
-  if(!/\/\*DATA_START\*\//.test(src))throw 0;
-  const data=JSON.stringify(jobs.map(({id,...r})=>r)).replace(/</g,"\\u003c");
-  const out=src.replace(/\/\*DATA_START\*\/[\s\S]*?\/\*DATA_END\*\//,()=>"/*DATA_START*/const DATA_VERSION="+JSON.stringify(new Date().toISOString())+",DATA="+data+",PHOTOS="+JSON.stringify(photos).replace(/</g,"\\u003c")+";/*DATA_END*/");
-  dl("index.html",out,"text/html");toast("index.html baru diunduh. Unggah ke GitHub untuk memperbarui semua pengguna.");
- }catch(e){toast("Gagal. Buka dashboard dari alamat GitHub Pages, bukan dari file di komputer.")}
-}
 $("datab").onclick=()=>$("datapop").classList.toggle("open");$("datapop").onclick=()=>$("datapop").classList.remove("open");
 document.addEventListener("click",e=>{if(!e.target.closest(".dm"))$("datapop").classList.remove("open")});
 $("csvf").onchange=e=>{const f=e.target.files[0];e.target.value="";if(f)f.text().then(importCSV)};
 (async()=>{
  render();
- db=mkLocalDb();
- $("note").textContent="Perubahan tersimpan di browser ini. Agar terlihat oleh semua orang: klik Simpan ke file, lalu unggah index.html yang diunduh ke GitHub.";
- db.collection("jobs").onSnapshot(x=>{jobs=x.docs.map(d=>({...d.data(),id:d.id,due:normDue(d.data().due)}));loaded=true;render()});
+ db=mkDb();
+ $("note").textContent="Data tersambung ke Google Sheet dan diperbarui otomatis.";
+ db.collection("jobs").onSnapshot(x=>{jobs=x.docs.map(d=>({...d.data(),id:d.id,due:normDue(d.data().due)}));loaded=true;render()},()=>{toast("Gagal terhubung ke Google Sheet");if(!loaded){loaded=true;render()}});
 })();
 </script>
 </body>
