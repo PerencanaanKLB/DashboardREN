@@ -119,6 +119,7 @@ td:nth-child(1)::before{content:"Pekerjaan Utama"}td:nth-child(2)::before{conten
 td:nth-child(9)::before{display:none}td:nth-child(9){justify-content:flex-end}
 .pg{min-width:0;flex:1;max-width:60%}.iss{max-width:none}main{padding:10px}
 }
+.hl2{font-size:12px;color:var(--mut);margin-top:-6px}.mb label.ck{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:13px;font-weight:500}.ck input{width:auto}.em{color:var(--mut);font-size:12px;margin-left:4px}
 </style>
 </head>
 <body>
@@ -130,7 +131,7 @@ td:nth-child(9)::before{display:none}td:nth-child(9){justify-content:flex-end}
  <div class="tools">
   <input id="q" placeholder="Cari pekerjaan, PIC, atau issue…">
   <select id="fst"><option>Semua Status</option><option>On Track</option><option>Berisiko</option><option>Terlambat</option><option>Selesai</option></select>
-  <div class="dm"><button class="btn g" id="datab">Data ▾</button><div class="pop" id="datapop"><button class="btn g" data-act="imp" title="Impor dari CSV atau unduhan Google Sheet">Impor CSV</button><button class="btn g" data-act="exp">Ekspor CSV</button></div></div><input type="file" id="csvf" accept=".csv,text/csv,text/plain" hidden>
+  <div class="dm"><button class="btn g" id="datab">Data ▾</button><div class="pop" id="datapop"><button class="btn g" data-act="imp" title="Impor dari CSV atau unduhan Google Sheet">Impor CSV</button><button class="btn g" data-act="exp">Ekspor CSV</button><button class="btn g" data-act="remind" title="Kirim email pengingat ke PIC yang tugasnya jatuh tempo dalam 3 hari atau terlambat">Kirim pengingat</button></div></div><input type="file" id="csvf" accept=".csv,text/csv,text/plain" hidden>
   <button class="btn" id="add" data-act="add">+ Tambah</button>
  </div></div>
  <div class="card tw"><table><thead><tr><th>Pekerjaan Utama</th><th>Nama Pekerjaan</th><th>Sub Bidang</th><th>PIC</th><th>Progress</th><th>Status</th><th>Due Date</th><th>Issue</th><th></th></tr></thead><tbody id="tb"></tbody></table><div class="empty" id="empty" style="display:none"></div></div></div>
@@ -141,6 +142,8 @@ td:nth-child(9)::before{display:none}td:nth-child(9){justify-content:flex-end}
  <label>Nama Pekerjaan<input id="f-name" placeholder="Isi manual"></label>
  <div class="r2"><label>Sub Bidang<select id="f-sub"></select></label><label>PIC<input id="f-pic"></label></div>
  <div class="pr"><span id="f-av"></span><div><div class="hl">Foto PIC (opsional). Berlaku untuk semua pekerjaan dengan nama PIC yang sama</div><button class="btn g" type="button" data-act="photo">Unggah foto</button> <button class="btn g" type="button" data-act="nophoto">Hapus foto</button><input type="file" id="pf" accept="image/*" hidden></div></div>
+ <label>Email PIC (Gmail), opsional<input id="f-em" type="email" placeholder="nama@gmail.com" autocomplete="off"></label><div class="hl2" id="f-emh"></div>
+ <label class="ck"><input type="checkbox" id="f-nt"> Kirim notifikasi email ke PIC saat disimpan</label>
  <div class="r2"><label>Status<select id="f-st"><option>On Track</option><option>Berisiko</option><option>Terlambat</option><option>Selesai</option></select></label><label>Progress: <span id="pv">0%</span><input type="range" id="f-pr" min="0" max="100" step="5"></label></div>
  <label>Due Date<div class="r3"><select id="f-dd"></select><select id="f-dm"></select><select id="f-dy"></select></div></label>
  <label>Issue / Kendala<textarea id="f-is" rows="3" placeholder="Kosongkan jika tidak ada issue"></textarea></label>
@@ -189,7 +192,7 @@ function render(){
  $("seg").innerHTML=[["Semua",-1]].concat(SUBS.map((s,i)=>[s,i])).map(([s,i])=>`<button class="${fsub===s?"on":""}" data-act="subset" data-v="${s}">${i>=0?`<span class="dt" style="--c:${COL[i]}"></span>`:""}${s==="Semua"?"Semua Sub Bidang":s}<i>${s==="Semua"?L.length:L.filter(j=>j.sub===s).length}</i></button>`).join("");
  const q=$("q").value.toLowerCase(),fs=$("fst").value;
  const V=L.filter(j=>(fsub==="Semua"||j.sub===fsub)&&(fs==="Semua Status"||j.st===fs)&&(j.name+j.pic+j.issue+(j.main||"")).toLowerCase().includes(q)).sort((a,b)=>SUBS.indexOf(a.sub)-SUBS.indexOf(b.sub)||a.name.localeCompare(b.name));
- $("tb").innerHTML=V.map(j=>{const i=SUBS.indexOf(j.sub);return `<tr><td>${j.main?`<span class="tag mn">${esc(j.main)}</span>`:"-"}</td><td><div class="nm">${esc(j.name)}</div></td><td><span class="tag sb" style="--c:${COL[i]}">${esc(j.sub)}</span></td><td><div class="pic">${avatar(j.pic)}${esc(j.pic)}</div></td><td><div class="pg" style="--c:${COL[i]}"><div class="bar"><i style="width:${j.prog}%"></i></div><span>${j.prog}%</span></div></td><td><span class="tag st-${SC[j.st]}">${esc(j.st)}</span></td>${dueCell(j)}<td class="iss ${j.issue?"":"none"}">${j.issue?"⚠ "+esc(j.issue):"Tidak ada issue"}</td><td>${canWrite?`<button class="btn g" data-act="edit" data-v="${esc(j.id)}">Ubah</button>`:""}</td></tr>`}).join("");
+ $("tb").innerHTML=V.map(j=>{const i=SUBS.indexOf(j.sub);return `<tr><td>${j.main?`<span class="tag mn">${esc(j.main)}</span>`:"-"}</td><td><div class="nm">${esc(j.name)}</div></td><td><span class="tag sb" style="--c:${COL[i]}">${esc(j.sub)}</span></td><td><div class="pic">${avatar(j.pic)}${esc(j.pic)}${pics[j.pic]?`<span class="em" title="Email PIC tersimpan">✉</span>`:""}</div></td><td><div class="pg" style="--c:${COL[i]}"><div class="bar"><i style="width:${j.prog}%"></i></div><span>${j.prog}%</span></div></td><td><span class="tag st-${SC[j.st]}">${esc(j.st)}</span></td>${dueCell(j)}<td class="iss ${j.issue?"":"none"}">${j.issue?"⚠ "+esc(j.issue):"Tidak ada issue"}</td><td>${canWrite?`<button class="btn g" data-act="edit" data-v="${esc(j.id)}">Ubah</button>`:""}</td></tr>`}).join("");
  const em=$("empty");
  if(!loaded){em.style.display="block";em.textContent="Memuat data…"}
  else if(!V.length){em.style.display="block";em.innerHTML=L.length?"Tidak ada pekerjaan yang cocok dengan filter.":`Belum ada data pekerjaan.${canWrite?`<br><br><button class="btn" data-act="imp">Impor CSV</button> <button class="btn g" data-act="add">+ Tambah Pekerjaan</button>`:""}`}
@@ -212,11 +215,12 @@ function getMain(){const m=$("f-main").value;return m==="Lain-Lain"?($("f-mo").v
 function avatar(n){const p=photos[n];return p&&/^data:image\//.test(p)?`<img class="av" src="${p}" alt="">`:`<span class="av">${esc(ini(n||"?"))}</span>`}
 function showAv(){const n=$("f-pic").value.trim(),p=pend===undefined?photos[n]:pend;$("f-av").innerHTML=p&&/^data:image\//.test(p)?`<img class="av" src="${p}" alt="">`:`<span class="av">${esc(ini(n||"?"))}</span>`}
 function readPhoto(f){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const s=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=128;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,128,128);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",.8))};im.onerror=()=>rej();im.src=u})}
-$("f-main").onchange=togMain;$("f-pic").oninput=showAv;
+function showEm(){const n=$("f-pic").value.trim(),m=pics[n];$("f-emh").textContent=!n?"":m?"Email tersimpan: "+m+". Kosongkan kolom ini untuk memakai email tersimpan.":"Belum ada email untuk PIC ini."}
+$("f-main").onchange=togMain;$("f-pic").oninput=()=>{showAv();showEm()};
 $("pf").onchange=e=>{const f=e.target.files[0];e.target.value="";if(f)readPhoto(f).then(d=>{pend=d;showAv()}).catch(()=>toast("Gambar tidak bisa dibaca"))};
 function openDlg(id){
  editId=id;const j=id?jobs.find(x=>x.id===id):{name:"",sub:fsub!=="Semua"?fsub:SUBS[0],pic:"",prog:0,st:"On Track",issue:"",due:""};
- $("mt").textContent=id?"Ubah Pekerjaan":"Tambah Pekerjaan";$("f-name").value=j.name;$("f-sub").value=j.sub;$("f-pic").value=j.pic;$("f-st").value=j.st;setDue(j.due);setMain(j.main);pend=undefined;showAv();$("f-pr").value=j.prog;$("pv").textContent=j.prog+"%";$("f-is").value=j.issue||"";
+ $("mt").textContent=id?"Ubah Pekerjaan":"Tambah Pekerjaan";$("f-name").value=j.name;$("f-sub").value=j.sub;$("f-pic").value=j.pic;$("f-st").value=j.st;setDue(j.due);setMain(j.main);pend=undefined;showAv();$("f-em").value="";$("f-nt").checked=!id;showEm();$("f-pr").value=j.prog;$("pv").textContent=j.prog+"%";$("f-is").value=j.issue||"";
  $("bdel").style.display=id?"":"none";$("dlg").showModal();
 }
 async function save(){
@@ -225,6 +229,11 @@ async function save(){
  const d={main,name:$("f-name").value.trim(),sub:$("f-sub").value,pic:$("f-pic").value.trim(),st:$("f-st").value,due:due,prog:+$("f-pr").value,issue:$("f-is").value.trim(),upd:new Date().toISOString().slice(0,10)};
  if(!d.name){toast("Nama pekerjaan wajib diisi");return}
  if(d.st==="Selesai")d.prog=100;
+ const em=$("f-em").value.trim().toLowerCase(),nt=$("f-nt").checked;
+ if((em||nt)&&!d.pic){toast("Isi nama PIC terlebih dahulu");return}
+ if(em&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){toast("Format email PIC tidak valid");return}
+ if(nt&&!em&&!pics[d.pic]){toast("Isi email PIC untuk mengirim notifikasi");return}
+ xtra={email:em,notify:nt};if(em)pics[d.pic]=em.charAt(0)+"***"+em.slice(em.indexOf("@"));
  if(d.pic){if(pend)photos[d.pic]=pend;else if(pend===null)delete photos[d.pic]}
  try{
   if(db){editId?await db.doc("jobs/"+editId).set(d):await db.collection("jobs").add(d)}
@@ -247,7 +256,7 @@ document.addEventListener("click",e=>{
  else if(a==="save")save();else if(a==="del")del();else if(a==="seed")seed();
  else if(a==="cancel")$("dlg").close();
  else if(a==="imp")$("csvf").click();else if(a==="exp")dl("monitoring-pekerjaan.csv",toCSV(),"text/csv;charset=utf-8");
- else if(a==="photo"){if(!$("f-pic").value.trim())toast("Isi nama PIC dulu");else $("pf").click()}else if(a==="nophoto"){pend=null;showAv()}
+ else if(a==="remind"){if(confirm("Kirim email pengingat sekarang ke semua PIC yang tugasnya jatuh tempo dalam 3 hari atau sudah terlambat?"))db.remind()}else if(a==="photo"){if(!$("f-pic").value.trim())toast("Isi nama PIC dulu");else $("pf").click()}else if(a==="nophoto"){pend=null;showAv()}
 });
 const PRE=[["Biru Korporat","#0B3C6D"],["Teal","#0F766E"],["Hijau","#15803D"],["Merah Marun","#9F1239"],["Ungu","#5B21B6"],["Oranye","#C2410C"],["Kuning Emas","#F5B301"],["Slate","#1E293B"]],DEF="#0B3C6D";
 function hsl(x){const n=parseInt(x.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2,s=d?d/(1-Math.abs(2*l-1)):0;let h=0;if(d){h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h=Math.round(h*60);if(h<0)h+=360}return{h,s:s*100,l:l*100}}
@@ -279,34 +288,37 @@ $("f-sub").innerHTML=SUBS.map(s=>`<option>${s}</option>`).join("");
 $("today").textContent=new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 function local(msg){db=null;loaded=true;$("note").textContent=msg;render()}
 const API="https://script.google.com/macros/s/AKfycbz3hvCfbSAn8e9IhLEGpzcC007Eb68ql-rZviIyp_9UflSZVYdb-VN3lucKvA5wdtLcsg/exec",K="dash-sheet-v2";
-let rows=[],photos={},pv="",pending=0,fetching=false,hadCache=false;
-try{const s=JSON.parse(localStorage.getItem(K)||"null");if(s&&Array.isArray(s.rows)){rows=s.rows;photos=s.photos||{};pv=s.pv||"";hadCache=true}}catch(e){}
-function warnV(){$("note").textContent="⚠ Code.gs di Google Apps Script belum versi terbaru: Pekerjaan Utama dan foto belum tersimpan. Lihat PANDUAN.md.";$("note").style.color="var(--late)"}
+let rows=[],photos={},pv="",pending=0,fetching=false,hadCache=false,pics={},xtra={};
+try{const s=JSON.parse(localStorage.getItem(K)||"null");if(s&&Array.isArray(s.rows)){rows=s.rows;photos=s.photos||{};pv=s.pv||"";pics=s.pics||{};hadCache=true}}catch(e){}
+function warnV(){$("note").textContent="⚠ Code.gs di Google Apps Script belum versi terbaru, sehingga Pekerjaan Utama, foto, dan email PIC belum berfungsi. Lihat PANDUAN.md.";$("note").style.color="var(--late)"}
+const MM={sent:"Email notifikasi terkirim ke PIC.",email_pic_belum_ada:"Tersimpan, tetapi PIC belum punya email.",kuota_email_habis:"Tersimpan, tetapi kuota email harian habis.",email_tidak_valid_atau_domain_tidak_diizinkan:"Tersimpan, tetapi email tidak valid atau domainnya tidak diizinkan.",gagal_kirim:"Tersimpan, tetapi email gagal dikirim.",terlalu_sering:"Pengingat baru saja dikirim. Coba lagi nanti."};
+function mailToast(m){toast(MM[m]||m)}
 function mkDb(){
  let cb=null,eb=null,sent={...photos},q=Promise.resolve();
- const persist=()=>{try{localStorage.setItem(K,JSON.stringify({rows,photos,pv}))}catch(e){}};
+ const persist=()=>{try{localStorage.setItem(K,JSON.stringify({rows,photos,pv,pics}))}catch(e){}};
  const emit=()=>{persist();cb&&cb({docs:rows.map(r=>({id:r.id,data:()=>r}))})};
  const post=async b=>{const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(b)});const j=await r.json();if(!j.ok)throw new Error(j.error||"error");return j};
  const refresh=async()=>{
   if(fetching||pending)return;fetching=true;
   try{
    const j=await(await fetch(API+"?a=list&t="+Date.now())).json();if(!j.ok)throw 0;
-   if(!j.v||j.v<2)warnV();
-   if(!pending){rows=j.rows;emit();
+   if(!j.v||j.v<3)warnV();
+   if(!pending){rows=j.rows;if(j.pics)pics=j.pics;emit();
     if(j.v>=2&&j.pv!==pv){const p=await(await fetch(API+"?a=photos&t="+Date.now())).json();if(p.ok&&!pending){photos=p.photos;sent={...photos};pv=j.pv;emit()}}}
   }catch(e){eb&&eb()}finally{fetching=false}
  };
- const send=b=>{pending++;q=q.then(async()=>{for(let i=0;i<3;i++){try{await post(b);return}catch(e){await new Promise(r=>setTimeout(r,700*(i+1)))}}toast("Gagal menyimpan ke Google Sheet. Data dimuat ulang.")}).then(()=>{pending--;if(!pending)refresh()})};
+ const send=b=>{pending++;q=q.then(async()=>{for(let i=0;i<3;i++){try{const j=await post(b);if(b.action==="remind"){j.mail?mailToast(j.mail):toast("Pengingat terkirim ke "+(j.sent||0)+" PIC")}else if(j&&j.mail)mailToast(j.mail);return}catch(e){await new Promise(r=>setTimeout(r,700*(i+1)))}}toast("Gagal menyimpan ke Google Sheet. Data dimuat ulang.")}).then(()=>{pending--;if(!pending)refresh()})};
  const photoSync=()=>{for(const k of Object.keys(photos))if(sent[k]!==photos[k]){sent[k]=photos[k];send({action:"setPhoto",pic:k,photo:photos[k]})}for(const k of Object.keys(sent))if(!(k in photos)){delete sent[k];send({action:"setPhoto",pic:k,photo:""})}};
- const nid=()=>"n"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+ const X=()=>{const x=xtra;xtra={};return x};const nid=()=>"n"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
  return{
   collection:()=>({
-   add:async d=>{const id=nid();rows.push({...d,id});emit();photoSync();send({action:"add",id,data:d})},
+   add:async d=>{const id=nid();rows.push({...d,id});emit();photoSync();send({action:"add",id,data:d,...X()})},
    onSnapshot:(f,e)=>{cb=f;eb=e;if(hadCache)emit();refresh();setInterval(()=>{if(!document.hidden)refresh()},30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh()})}
   }),
   doc:p=>{const id=p.split("/")[1];return{
-   set:async d=>{rows=rows.map(r=>r.id===id?{...d,id}:r);emit();photoSync();send({action:"set",id,data:d})},
+   set:async d=>{rows=rows.map(r=>r.id===id?{...d,id}:r);emit();photoSync();send({action:"set",id,data:d,...X()})},
    delete:async()=>{rows=rows.filter(r=>r.id!==id);emit();send({action:"delete",id})}}},
+  remind:()=>send({action:"remind"}),
   replace:a=>{rows=a.map((r,i)=>({...r,id:nid()+i}));emit();send({action:"replace",rows})}
  };
 }
