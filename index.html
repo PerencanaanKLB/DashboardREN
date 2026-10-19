@@ -147,8 +147,8 @@ td:nth-child(10)::before{display:none}td:nth-child(10){justify-content:flex-end}
 <dialog id="dlg"><div class="mh" id="mt">Pekerjaan</div><div class="mb">
  <div class="r2"><label>Pekerjaan Utama<select id="f-main"><option value="">Pilih pekerjaan utama…</option><option>Approval Drawing</option><option>Pembuatan RAB</option><option>Pembuatan BOQ</option><option>Pembuatan AHS</option><option>Rapat Koordinasi</option><option>Lain-Lain</option></select></label><label id="f-mol" style="display:none">Sebutkan pekerjaan lain<input id="f-mo" placeholder="Isi manual"></label></div>
  <label>Nama Pekerjaan<input id="f-name" placeholder="Isi manual"></label>
- <div class="r2"><div class="fl">Sub Bidang <small>(bisa lebih dari satu)</small><div id="f-sub" class="chks"></div></div><div class="fl">PIC <small>(bisa lebih dari satu, email terisi otomatis)</small><div id="f-ps" class="chks pc"></div><input id="f-pic" placeholder="PIC lain: ketik nama panggilan (pisahkan koma)" style="margin-top:6px"></div></div>
- <label>Email PIC (Gmail), opsional<input id="f-em" type="email" placeholder="nama@gmail.com" autocomplete="off"></label><div class="hl2" id="f-emh"></div>
+ <div class="r2"><div class="fl">Sub Bidang <small>(bisa lebih dari satu)</small><div id="f-sub" class="chks"></div></div><div class="fl">PIC <small>(bisa lebih dari satu · email terisi otomatis)</small><div id="f-ps" class="chks pc"></div><input id="f-pic" type="hidden"></div></div>
+ <label style="display:none"><input id="f-em" type="email" autocomplete="off"></label><div class="hl2" id="f-emh"></div>
  <label class="ck"><input type="checkbox" id="f-nt"> Kirim notifikasi email ke PIC saat disimpan</label>
  <div class="r2"><label>Status<select id="f-st"><option>On Track</option><option>Berisiko</option><option>Terlambat</option><option>Selesai</option></select></label><label>Progress: <span id="pv">0%</span><input type="range" id="f-pr" min="0" max="100" step="5"></label></div>
  <label>Tanggal Mulai<div class="r3"><select id="f-sd"></select><select id="f-sm"></select><select id="f-sy"></select></div></label>
@@ -157,7 +157,7 @@ td:nth-child(10)::before{display:none}td:nth-child(10){justify-content:flex-end}
 </div><div class="mf"><button class="btn d" data-act="del" id="bdel">Hapus</button><button class="btn g" data-act="cancel">Batal</button><button class="btn" data-act="save">Simpan</button></div></dialog>
 <div id="toast"></div>
 <script>
-const PL=j=>String(j.pic||"").split(/[,;]/).map(s=>s.trim()).filter(Boolean);const PN=a=>[...new Set(a.flatMap(PL))].sort((x,y)=>x.localeCompare(y));const SB=j=>String(j.sub||"").split(/[,;]/).map(s=>s.trim()).filter(Boolean);const SUBS=["Perencanaan Umum","Perencanaan Sipil","Perencanaan Elektromekanik"],COL=["var(--s0)","var(--s1)","var(--s2)"];
+const PL=j=>String(j.pic||"").split(/[,;]/).map(s=>s.trim()).filter(Boolean);const ROSTER=["Ainanto","Kahfi","Andi","Putra","Yafy","Dwi","Putri","Harry","Denny","Maziz","Rio","David","Ficky","Handri","Albert"];const PN=a=>[...new Set(a.flatMap(PL).filter(p=>ROSTER.includes(p)))].sort((x,y)=>x.localeCompare(y));const SB=j=>String(j.sub||"").split(/[,;]/).map(s=>s.trim()).filter(Boolean);const SUBS=["Perencanaan Umum","Perencanaan Sipil","Perencanaan Elektromekanik"],COL=["var(--s0)","var(--s1)","var(--s2)"];
 const SC={"On Track":"on","Berisiko":"risk","Terlambat":"late","Selesai":"done"};
 const SEED=[
 ["Penyusunan RKAP Perencanaan 2027",0,"Andi P.",65,"On Track","","2026-11-15"],
@@ -223,7 +223,7 @@ function setMain(v){const o=MAINS.includes(v);$("f-main").value=o?v:(v?"Lain-Lai
 function getMain(){const m=$("f-main").value;return m==="Lain-Lain"?($("f-mo").value.trim()||"Lain-Lain"):m}
 function avatar(n){return `<span class="av">${esc(ini(n||"?"))}</span>`}
 function selPics(){return[...new Set([...document.querySelectorAll("#f-ps input:checked")].map(c=>c.value).concat($("f-pic").value.split(/[,;]/).map(s=>s.trim()).filter(Boolean)))]}
-function showEm(){const a=selPics();$("f-emh").textContent=!a.length?"":a.map(p=>p+(pics[p]?" ✉ "+pics[p]:" – belum ada email")).join(" · ")+(a.some(p=>!pics[p])?". Isi kolom email di atas bila hanya ada 1 PIC baru tanpa email.":"")}
+function showEm(){const a=selPics();$("f-emh").textContent=!a.length?"":a.map(p=>p+(pics[p]?" ✉ "+pics[p]:" – belum ada email")).join(" · ")}
 $("f-main").onchange=togMain;$("f-pic").oninput=showEm;$("f-ps").onchange=showEm;
 function openDlg(id){
  editId=id;const j=id?jobs.find(x=>x.id===id):{name:"",sub:fsub!=="Semua"?fsub:SUBS[0],pic:"",prog:0,st:"On Track",issue:"",due:""};
@@ -294,7 +294,7 @@ let sv=null;try{sv=localStorage.getItem("dash-theme")}catch(e){}
 applyTheme(sv||DEF,0);
 $("fsb").onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};if(!document.fullscreenEnabled)$("fsb").style.display="none";
 $("q").oninput=render;$("fst").onchange=render;$("fpc").onchange=render;$("f-pr").oninput=e=>$("pv").textContent=e.target.value+"%";
-$("f-sub").innerHTML=SUBS.map(s=>`<label><input type="checkbox" value="${s}">${s}</label>`).join("");function fillPics(){const a=getSubs().split(", ").filter(Boolean),mine=PN(jobs.filter(j=>SB(j).some(s=>a.includes(s)))),all=[...new Set(Object.keys(pics).concat(PN(jobs)).filter(Boolean))].sort((x,y)=>x.localeCompare(y)),cur=selPics(),ord=mine.concat(all.filter(p=>!mine.includes(p))),extra=cur.filter(p=>!ord.includes(p));$("f-ps").innerHTML=ord.map(p=>`<label><input type="checkbox" value="${esc(p)}"${cur.includes(p)?" checked":""}>${esc(p)}${pics[p]?" ✉":""}</label>`).join("");$("f-pic").value=extra.join(", ");showEm()}
+$("f-sub").innerHTML=SUBS.map(s=>`<label><input type="checkbox" value="${s}">${s}</label>`).join("");function fillPics(){const a=getSubs().split(", ").filter(Boolean),mine=PN(jobs.filter(j=>SB(j).some(s=>a.includes(s)))),cur=selPics(),ord=mine.concat(ROSTER.filter(p=>!mine.includes(p))),extra=cur.filter(p=>!ROSTER.includes(p)),L=(p,x)=>`<label><input type="checkbox" value="${esc(p)}"${cur.includes(p)?" checked":""}>${esc(p)}${x||(pics[p]?" ✉":"")}</label>`;$("f-ps").innerHTML=ord.map(p=>L(p)).join("")+extra.map(p=>L(p," <small>(di luar daftar)</small>")).join("");$("f-pic").value="";showEm()}
 document.addEventListener("change",e=>{if(e.target.closest("#f-sub"))fillPics()});function setSubs(v){const a=SB({sub:v});document.querySelectorAll("#f-sub input").forEach(c=>c.checked=a.includes(c.value))}function getSubs(){return[...document.querySelectorAll("#f-sub input:checked")].map(c=>c.value).join(", ")}
 $("today").textContent=new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 function local(msg){db=null;loaded=true;$("note").textContent=msg;render()}
