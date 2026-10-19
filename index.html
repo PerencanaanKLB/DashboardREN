@@ -100,7 +100,7 @@ main>.wrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;width
 .lst .tw{flex:1;min-height:0;overflow:auto}
 th{position:sticky;top:0;z-index:2;font-size:12px}td{padding:11px 14px;font-size:15px}
 .note{flex:none;margin:0;font-size:12px}
-.r2{align-items:start}
+.r2{align-items:start}.fl{display:block;font-size:13px;font-weight:600}.fl small{font-weight:400;opacity:.7}.chks{display:flex;flex-direction:column;gap:6px;margin-top:6px}.chks label{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #d6dde8;border-radius:10px;font-weight:500;cursor:pointer;background:#fff}.chks input{width:auto;margin:0;accent-color:var(--p)}.chks label:has(input:checked){border-color:var(--p);background:#eef4fc}.tag.sb+.tag.sb{margin-left:4px}
 .logo-img{height:clamp(46px,6vh,68px)}.bt b{font-size:clamp(17px,1.35vw,21px)}.bt span{font-size:clamp(13px,1vw,16px)}
 .ttl h1{font-size:clamp(18px,1.6vw,24px);white-space:nowrap}
 .band .k-l,.band .k-n{font-size:11.5px}.band .k-v{font-size:24px}
@@ -146,7 +146,7 @@ td:nth-child(10)::before{display:none}td:nth-child(10){justify-content:flex-end}
 <dialog id="dlg"><div class="mh" id="mt">Pekerjaan</div><div class="mb">
  <div class="r2"><label>Pekerjaan Utama<select id="f-main"><option value="">Pilih pekerjaan utama…</option><option>Approval Drawing</option><option>Pembuatan RAB</option><option>Pembuatan BOQ</option><option>Pembuatan AHS</option><option>Rapat Koordinasi</option><option>Lain-Lain</option></select></label><label id="f-mol" style="display:none">Sebutkan pekerjaan lain<input id="f-mo" placeholder="Isi manual"></label></div>
  <label>Nama Pekerjaan<input id="f-name" placeholder="Isi manual"></label>
- <div class="r2"><label>Sub Bidang<select id="f-sub"></select></label><label>PIC<input id="f-pic"></label></div>
+ <div class="r2"><div class="fl">Sub Bidang <small>(bisa lebih dari satu)</small><div id="f-sub" class="chks"></div></div><label>PIC<input id="f-pic"></label></div>
  <label>Email PIC (Gmail), opsional<input id="f-em" type="email" placeholder="nama@gmail.com" autocomplete="off"></label><div class="hl2" id="f-emh"></div>
  <label class="ck"><input type="checkbox" id="f-nt"> Kirim notifikasi email ke PIC saat disimpan</label>
  <div class="r2"><label>Status<select id="f-st"><option>On Track</option><option>Berisiko</option><option>Terlambat</option><option>Selesai</option></select></label><label>Progress: <span id="pv">0%</span><input type="range" id="f-pr" min="0" max="100" step="5"></label></div>
@@ -156,7 +156,7 @@ td:nth-child(10)::before{display:none}td:nth-child(10){justify-content:flex-end}
 </div><div class="mf"><button class="btn d" data-act="del" id="bdel">Hapus</button><button class="btn g" data-act="cancel">Batal</button><button class="btn" data-act="save">Simpan</button></div></dialog>
 <div id="toast"></div>
 <script>
-const SUBS=["Perencanaan Umum","Perencanaan Sipil","Perencanaan Elektromekanik"],COL=["var(--s0)","var(--s1)","var(--s2)"];
+const SB=j=>String(j.sub||"").split(/[,;]/).map(s=>s.trim()).filter(Boolean);const SUBS=["Perencanaan Umum","Perencanaan Sipil","Perencanaan Elektromekanik"],COL=["var(--s0)","var(--s1)","var(--s2)"];
 const SC={"On Track":"on","Berisiko":"risk","Terlambat":"late","Selesai":"done"};
 const SEED=[
 ["Penyusunan RKAP Perencanaan 2027",0,"Andi P.",65,"On Track","","2026-11-15"],
@@ -194,11 +194,11 @@ function render(){
  const L=jobs,o=L.filter(open).length,r=L.filter(j=>j.st==="Terlambat"||j.st==="Berisiko").length;
  $("kpi").innerHTML=[["Total Pekerjaan",L.length,"di 3 sub bidang"],["Rata-rata Progress",avg(L)+"%","seluruh pekerjaan"],["Pekerjaan Selesai",L.filter(j=>j.st==="Selesai").length,"dari "+L.length+" pekerjaan"],["Issue Terbuka",o,r+" berisiko / terlambat"]]
  .map(k=>`<div class="card"><div class="k-l">${k[0]}</div><div class="k-v">${k[1]}</div><div class="k-n">${k[2]}</div></div>`).join("");
- $("subs").innerHTML=SUBS.map((s,i)=>{const a=L.filter(j=>j.sub===s);return `<div class="card sc ${fsub===s?"on":""}" style="--c:${COL[i]}" data-act="sub" data-v="${s}"><div class="row"><b>${s}</b><span class="big">${avg(a)}%</span></div><div class="bar"><i style="width:${avg(a)}%"></i></div><div class="meta"><span>${a.length} pekerjaan</span><span>${a.filter(open).length} issue</span><span>${a.filter(j=>j.st==="Selesai").length} selesai</span></div></div>`}).join("");
- $("seg").innerHTML=[["Semua",-1]].concat(SUBS.map((s,i)=>[s,i])).map(([s,i])=>`<button class="${fsub===s?"on":""}" data-act="subset" data-v="${s}">${i>=0?`<span class="dt" style="--c:${COL[i]}"></span>`:""}${s==="Semua"?"Semua Sub Bidang":s}<i>${s==="Semua"?L.length:L.filter(j=>j.sub===s).length}</i></button>`).join("");
+ $("subs").innerHTML=SUBS.map((s,i)=>{const a=L.filter(j=>SB(j).includes(s));return `<div class="card sc ${fsub===s?"on":""}" style="--c:${COL[i]}" data-act="sub" data-v="${s}"><div class="row"><b>${s}</b><span class="big">${avg(a)}%</span></div><div class="bar"><i style="width:${avg(a)}%"></i></div><div class="meta"><span>${a.length} pekerjaan</span><span>${a.filter(open).length} issue</span><span>${a.filter(j=>j.st==="Selesai").length} selesai</span></div></div>`}).join("");
+ $("seg").innerHTML=[["Semua",-1]].concat(SUBS.map((s,i)=>[s,i])).map(([s,i])=>`<button class="${fsub===s?"on":""}" data-act="subset" data-v="${s}">${i>=0?`<span class="dt" style="--c:${COL[i]}"></span>`:""}${s==="Semua"?"Semua Sub Bidang":s}<i>${s==="Semua"?L.length:L.filter(j=>SB(j).includes(s)).length}</i></button>`).join("");
  const q=$("q").value.toLowerCase(),fs=$("fst").value;
- const V=L.filter(j=>(fsub==="Semua"||j.sub===fsub)&&(fs==="Semua Status"||j.st===fs)&&(j.name+j.pic+j.issue+(j.main||"")).toLowerCase().includes(q)).sort((a,b)=>SUBS.indexOf(a.sub)-SUBS.indexOf(b.sub)||a.name.localeCompare(b.name));
- $("tb").innerHTML=V.map(j=>{const i=SUBS.indexOf(j.sub);return `<tr><td>${j.main?`<span class="tag mn">${esc(j.main)}</span>`:"-"}</td><td><div class="nm">${esc(j.name)}</div></td><td><span class="tag sb" style="--c:${COL[i]}">${esc(j.sub)}</span></td><td><div class="pic">${avatar(j.pic)}${esc(j.pic)}${pics[j.pic]?`<span class="em" title="Email PIC tersimpan">✉</span>`:""}</div></td><td><div class="pg" style="--c:${COL[i]}"><div class="bar"><i style="width:${j.prog}%"></i></div><span>${j.prog}%</span></div></td><td><span class="tag st-${SC[j.st]}">${esc(j.st)}</span></td><td class="dd"><b>${fmt(j.start)}</b></td>${dueCell(j)}<td class="iss ${j.issue?"":"none"}">${j.issue?"⚠ "+esc(j.issue):"Tidak ada issue"}</td><td>${canWrite?`<button class="btn g" data-act="edit" data-v="${esc(j.id)}">Ubah</button>`:""}</td></tr>`}).join("");
+ const V=L.filter(j=>(fsub==="Semua"||SB(j).includes(fsub))&&(fs==="Semua Status"||j.st===fs)&&(j.name+j.pic+j.issue+(j.main||"")).toLowerCase().includes(q)).sort((a,b)=>SUBS.indexOf(SB(a)[0])-SUBS.indexOf(SB(b)[0])||a.name.localeCompare(b.name));
+ $("tb").innerHTML=V.map(j=>{const i=SUBS.indexOf(SB(j)[0]);return `<tr><td>${j.main?`<span class="tag mn">${esc(j.main)}</span>`:"-"}</td><td><div class="nm">${esc(j.name)}</div></td><td>${SB(j).map(s=>`<span class="tag sb" style="--c:${COL[SUBS.indexOf(s)]}">${esc(s)}</span>`).join(" ")}</td><td><div class="pic">${avatar(j.pic)}${esc(j.pic)}${pics[j.pic]?`<span class="em" title="Email PIC tersimpan">✉</span>`:""}</div></td><td><div class="pg" style="--c:${COL[i]}"><div class="bar"><i style="width:${j.prog}%"></i></div><span>${j.prog}%</span></div></td><td><span class="tag st-${SC[j.st]}">${esc(j.st)}</span></td><td class="dd"><b>${fmt(j.start)}</b></td>${dueCell(j)}<td class="iss ${j.issue?"":"none"}">${j.issue?"⚠ "+esc(j.issue):"Tidak ada issue"}</td><td>${canWrite?`<button class="btn g" data-act="edit" data-v="${esc(j.id)}">Ubah</button>`:""}</td></tr>`}).join("");
  const em=$("empty");
  if(!loaded){em.style.display="block";em.textContent="Memuat data…"}
  else if(!V.length){em.style.display="block";em.innerHTML=L.length?"Tidak ada pekerjaan yang cocok dengan filter.":`Belum ada data pekerjaan.${canWrite?`<br><br><button class="btn" data-act="imp">Impor CSV</button> <button class="btn g" data-act="add">+ Tambah Pekerjaan</button>`:""}`}
@@ -224,7 +224,7 @@ function showEm(){const n=$("f-pic").value.trim(),m=pics[n];$("f-emh").textConte
 $("f-main").onchange=togMain;$("f-pic").oninput=()=>{showEm()};
 function openDlg(id){
  editId=id;const j=id?jobs.find(x=>x.id===id):{name:"",sub:fsub!=="Semua"?fsub:SUBS[0],pic:"",prog:0,st:"On Track",issue:"",due:""};
- $("mt").textContent=id?"Ubah Pekerjaan":"Tambah Pekerjaan";$("f-name").value=j.name;$("f-sub").value=j.sub;$("f-pic").value=j.pic;$("f-st").value=j.st;setDue(j.due);setDt("f-s",j.start);setMain(j.main);$("f-em").value="";$("f-nt").checked=!id;showEm();$("f-pr").value=j.prog;$("pv").textContent=j.prog+"%";$("f-is").value=j.issue||"";
+ $("mt").textContent=id?"Ubah Pekerjaan":"Tambah Pekerjaan";$("f-name").value=j.name;setSubs(j.sub);$("f-pic").value=j.pic;$("f-st").value=j.st;setDue(j.due);setDt("f-s",j.start);setMain(j.main);$("f-em").value="";$("f-nt").checked=!id;showEm();$("f-pr").value=j.prog;$("pv").textContent=j.prog+"%";$("f-is").value=j.issue||"";
  $("bdel").style.display=id?"":"none";$("dlg").showModal();
 }
 async function save(){
@@ -232,8 +232,9 @@ async function save(){
  const start=getDt("f-s");if(start===null){toast("Tanggal Mulai tidak lengkap atau tidak valid");return}
  if(start&&due&&start>due){toast("Tanggal Mulai tidak boleh setelah Due Date");return}
  const main=getMain();if(!main){toast("Pilih Pekerjaan Utama");return}
- const d={main,name:$("f-name").value.trim(),sub:$("f-sub").value,pic:$("f-pic").value.trim(),st:$("f-st").value,due:due,start:start,prog:+$("f-pr").value,issue:$("f-is").value.trim(),upd:new Date().toISOString().slice(0,10)};
+ const d={main,name:$("f-name").value.trim(),sub:getSubs(),pic:$("f-pic").value.trim(),st:$("f-st").value,due:due,start:start,prog:+$("f-pr").value,issue:$("f-is").value.trim(),upd:new Date().toISOString().slice(0,10)};
  if(!d.name){toast("Nama pekerjaan wajib diisi");return}
+ if(!d.sub){toast("Pilih minimal satu Sub Bidang");return}
  if(d.st==="Selesai")d.prog=100;
  const em=$("f-em").value.trim().toLowerCase(),nt=$("f-nt").checked;
  if((em||nt)&&!d.pic){toast("Isi nama PIC terlebih dahulu");return}
@@ -289,7 +290,7 @@ let sv=null;try{sv=localStorage.getItem("dash-theme")}catch(e){}
 applyTheme(sv||DEF,0);
 $("fsb").onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};if(!document.fullscreenEnabled)$("fsb").style.display="none";
 $("q").oninput=render;$("fst").onchange=render;$("f-pr").oninput=e=>$("pv").textContent=e.target.value+"%";
-$("f-sub").innerHTML=SUBS.map(s=>`<option>${s}</option>`).join("");
+$("f-sub").innerHTML=SUBS.map(s=>`<label><input type="checkbox" value="${s}">${s}</label>`).join("");function setSubs(v){const a=SB({sub:v});document.querySelectorAll("#f-sub input").forEach(c=>c.checked=a.includes(c.value))}function getSubs(){return[...document.querySelectorAll("#f-sub input:checked")].map(c=>c.value).join(", ")}
 $("today").textContent=new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 function local(msg){db=null;loaded=true;$("note").textContent=msg;render()}
 const API="https://script.google.com/macros/s/AKfycbzHNT711kBviyFnSxvqA92DcbMFCsp8GZyyJCIgolSiS5J75CVoYnC4Qfvv7jbZHqzs/exec",K="dash-sheet-v2";
@@ -356,7 +357,7 @@ function importCSV(text){
  const ST=["On Track","Berisiko","Terlambat","Selesai"],out=[];
  for(const r of R.slice(1)){
   const g=k=>ix[k]>=0?(r[ix[k]]||"").trim():"",name=g("name");if(!name)continue;
-  const sv=g("sub").toLowerCase(),sub=SUBS.find(s=>s.toLowerCase()===sv)||SUBS.find(s=>sv&&s.toLowerCase().endsWith(sv.replace(/^perencanaan\s*/,"")))||SUBS[0];
+  const sv=g("sub").toLowerCase(),sub=(sv.split(/[,;]/).map(x=>x.trim()).filter(Boolean).map(x=>SUBS.find(s=>s.toLowerCase()===x)||SUBS.find(s=>s.toLowerCase().endsWith(x.replace(/^perencanaan\s*/,"")))).filter(Boolean).filter((s,i,a)=>a.indexOf(s)===i).join(", "))||SUBS[0];
   const stv=g("st").toLowerCase();
   out.push({main:g("main"),name,sub,pic:g("pic"),prog:Math.min(100,Math.max(0,parseInt(g("prog"))||0)),st:ST.find(s=>s.toLowerCase()===stv)||"On Track",start:normDue(g("start")),due:normDue(g("due")),issue:g("issue"),upd:todayS()});
  }
