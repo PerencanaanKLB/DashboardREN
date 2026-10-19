@@ -208,7 +208,7 @@ function setDue(v){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||""),y=m?m[1]:"";
  $("f-dd").value=m?String(+m[3]):"";$("f-dm").value=m?String(+m[2]):"";$("f-dy").value=y}
 function getDue(){const d=$("f-dd").value,m=$("f-dm").value,y=$("f-dy").value;if(!d&&!m&&!y)return"";if(!d||!m||!y)return null;
  if(new Date(+y,+m-1,+d).getMonth()!==+m-1)return null;return y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")}
-const MAINS=["Approval Drawing","Pembuatan RAB","Pembuatan BOQ","Rapat Koordinasi"];let pend;
+const MAINS=["Approval Drawing","Pembuatan RAB","Pembuatan BOQ","Pembuatan AHS","Rapat Koordinasi"];let pend;
 function togMain(){$("f-mol").style.display=$("f-main").value==="Lain-Lain"?"":"none"}
 function setMain(v){const o=MAINS.includes(v);$("f-main").value=o?v:(v?"Lain-Lain":"");$("f-mo").value=(!o&&v&&v!=="Lain-Lain")?v:"";togMain()}
 function getMain(){const m=$("f-main").value;return m==="Lain-Lain"?($("f-mo").value.trim()||"Lain-Lain"):m}
