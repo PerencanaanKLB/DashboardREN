@@ -184,7 +184,7 @@ td:nth-child(10)::before{display:none}td:nth-child(10){justify-content:flex-end}
 </div><div class="mf"><button class="btn d" data-act="rdel" id="rbdel">Hapus</button><button class="btn g" data-act="rcancel">Batal</button><button class="btn" data-act="rsave">Simpan</button></div></dialog>
 <div id="toast"></div>
 <script>
-const PL=j=>String(j.pic||"").split(/[,;]/).map(s=>s.trim()).filter(Boolean);const ROSTER=["Ainanto","Kahfi","Andi","Putra","Yafy","Dwi","Putri","Harry","Denny","Maziz","Rio","David","Ficky","Handri","Albert"];const PN=a=>[...new Set(a.flatMap(PL).filter(p=>ROSTER.includes(p)))].sort((x,y)=>x.localeCompare(y));const SB=j=>String(j.sub||"").split(/[,;]/).map(s=>s.trim()).filter(Boolean);const SUBS=["Perencanaan Umum","Perencanaan Sipil","Perencanaan Elektromekanik"],COL=["var(--s0)","var(--s1)","var(--s2)"];
+const PL=j=>String(j.pic||"").split(/[,;]/).map(s=>s.trim()).filter(Boolean);const ROSTER=["Ainanto","Kahfi","Andi","Putra","Yafy","Dwi","Ratna Mnz","Harry","Denny","Maziz","Rio","David","Ficky","Handri","Albert"];const PN=a=>[...new Set(a.flatMap(PL).filter(p=>ROSTER.includes(p)))].sort((x,y)=>x.localeCompare(y));const SB=j=>String(j.sub||"").split(/[,;]/).map(s=>s.trim()).filter(Boolean);const SUBS=["Perencanaan Umum","Perencanaan Sipil","Perencanaan Elektromekanik"],COL=["var(--s0)","var(--s1)","var(--s2)"];
 const SC={"On Track":"on","Berisiko":"risk","Terlambat":"late","Selesai":"done"};
 const SEED=[
 ["Penyusunan RKAP Perencanaan 2027",0,"Andi P.",65,"On Track","","2026-11-15"],
