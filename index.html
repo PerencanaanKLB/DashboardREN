@@ -167,14 +167,18 @@ main{padding-top:8px}main>.wrap{gap:8px}
 .fqh{font-size:12px;color:var(--mut);margin:6px 0 0;line-height:1.5}
 th.sortable{cursor:pointer;user-select:none;white-space:nowrap}th.sortable:hover{color:var(--brand)}th.sorted{color:var(--brand)}th .ar{font-size:9px;margin-left:5px}
 #fsort{max-width:210px}
-.mpick{border:1px solid #d6dde8;border-radius:12px;overflow:hidden;background:#fff;margin-top:6px}
-.mpick .mq{border:0;border-bottom:1px solid var(--line);border-radius:0;width:100%;padding:9px 12px;font-size:13px;box-sizing:border-box;background:var(--soft)}
-.mlist{max-height:176px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
-.mi{display:flex;gap:9px;align-items:flex-start;padding:8px 12px;font-size:13px;line-height:1.35;cursor:pointer;border-bottom:1px solid #f0f3f8;font-weight:500}
-.mi::before{content:"";flex:none;width:12px;height:12px;border-radius:50%;border:2px solid #b9c4d4;margin-top:2px;box-sizing:border-box}
-.mi:hover{background:var(--soft)}.mi.on{background:#eef4fc;font-weight:700;color:var(--brand)}.mi.on::before{border-color:var(--p);background:var(--p);box-shadow:inset 0 0 0 2px #fff}
-.mi.man{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);border-bottom:0}.mi.man.on{background:#eef4fc}.mi.none{cursor:default;color:var(--mut)}.mi.none::before{display:none}
-.mi small{font-weight:400;opacity:.7}
+.cb{position:relative;margin-top:6px}
+.cbi{width:100%;box-sizing:border-box;padding:10px 58px 10px 13px;border:1px solid #d6dde8;border-radius:12px;font-size:14px;font-weight:600;color:var(--brand);background:#fff;transition:border-color .15s,box-shadow .15s}
+.cbi::placeholder{font-weight:400;color:#8896ab}.cbi:focus{outline:0;border-color:var(--p);box-shadow:0 0 0 3px color-mix(in srgb,var(--p) 20%,transparent)}
+.cbc{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mut);font-size:12px}
+.cbx{position:absolute;right:34px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--mut);font-size:18px;line-height:1;padding:0 5px;display:none}.cb.has .cbx{display:block}.cbx:hover{color:var(--late)}
+.mlist{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:40;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 22px 44px -16px rgba(8,43,79,.5);max-height:232px;overflow:auto;padding:5px;overscroll-behavior:contain;scrollbar-width:thin;animation:mpin .14s ease-out}
+.mlist[hidden]{display:none}@keyframes mpin{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.mi{padding:8px 11px;font-size:13px;line-height:1.35;cursor:pointer;border-radius:9px;font-weight:500;position:relative;padding-right:28px}
+.mi.act{background:var(--soft)}.mi.on{color:var(--brand);font-weight:700}.mi.on::after{content:"✓";position:absolute;right:11px;top:8px;color:var(--p)}
+.mi mark{background:#FFE98A;color:inherit;border-radius:3px;padding:0 1px}
+.mi.man{position:sticky;bottom:-5px;background:#fff;border-top:1px solid var(--line);border-radius:0 0 9px 9px;margin-top:3px;box-shadow:0 -6px 8px -6px rgba(8,43,79,.12)}.mi.man.act{background:var(--soft)}
+.mi.none{cursor:default;color:var(--mut)}.mi small{font-weight:400;opacity:.65;margin-left:4px}
 
 .band{grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:start}.sc .pl{display:none}.band .subs .card{padding:6px 12px 7px}
 .iss{font-size:12.5px}.iss.none{white-space:nowrap}
@@ -205,7 +209,7 @@ th.sortable{cursor:pointer;user-select:none;white-space:nowrap}th.sortable:hover
  <div class="note" id="note"></div>
 </div></main>
 <dialog id="dlg"><div class="mh" id="mt">Pekerjaan</div><div class="mb">
- <div class="fl">Pekerjaan Utama <small>(cari atau gulir daftar)</small><input type="hidden" id="f-main"><div class="mpick"><input class="mq" id="mp-q" placeholder="Cari pekerjaan utama…" autocomplete="off"><div class="mlist" id="mlist"></div></div></div>
+ <div class="fl">Pekerjaan Utama<input type="hidden" id="f-main"><div class="cb" id="cb"><input id="mp-q" class="cbi" placeholder="Pilih atau ketik untuk mencari…" autocomplete="off" role="combobox" aria-expanded="false"><span class="cbx" id="cb-x" title="Hapus pilihan">×</span><span class="cbc">▾</span><div class="mlist" id="mlist" hidden></div></div></div>
  <label id="f-mol" style="display:none">Sebutkan pekerjaan lain<input id="f-mo" placeholder="Isi manual"></label>
  <label>Nama Pekerjaan<input id="f-name" placeholder="Isi manual"></label>
  <div class="r2"><div class="fl">Sub Bidang <small>(bisa lebih dari satu)</small><div id="f-sub" class="chks"></div></div><div class="fl">PIC <small>(bisa lebih dari satu · email terisi otomatis)</small><div id="f-ps" class="chks pc"></div><input id="f-pic" type="hidden"></div></div>
@@ -311,13 +315,32 @@ function setDt(p,v){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||""),y=m?m[1]:"";
 function getDt(p){const d=$(p+"d").value,m=$(p+"m").value,y=$(p+"y").value;if(!d&&!m&&!y)return"";if(!d||!m||!y)return null;
  if(new Date(+y,+m-1,+d).getMonth()!==+m-1)return null;return y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")}
 const setDue=v=>setDt("f-d",v),getDue=()=>getDt("f-d");
-const MAINS=["Approval Drawing","Pembuatan RAB","Pembuatan BOQ","Pembuatan AHS","Rapat Koordinasi","Pembuatan RAB dan KAK konsultan survei dan soil investigasi","Pelaksanaan Survei serta review hasil survei","Pelaksanaan Soil investigasi","Survei & pengolahan data hasil survei","Soil Investigasi & Review Hasil Soil Investigasi","Survei bersama UID untuk scoring lokasi Proyek","Laporan kinerja bulanan","Update proyek prakonstruksi dan rapat checkpoint dengan DIV PMO","Update presentasi dan rapat permintaan PLN Pusat atau unit lain","Pembuatan RAB untuk KKP","Pembuatan dokumen Perencanaan","Approval Drawing Renum","Mengisi anggaran e-budget","Weekly Performance Review","Monthly Performance Audit Dialogue","Menyiapkan dan meeting GRC","Check point kerawanan sistem Kalimantan","Input DAMS CP","RKAP","RJPP UIP KLB","Pengawasan Konsultan Survey","Pembuatan RAB & Desk Study"];
-function renderMain(){const v=$("f-main").value,q=$("mp-q").value.trim().toLowerCase(),L=MAINS.filter(m=>m.toLowerCase().includes(q));
- $("mlist").innerHTML=(L.length?L.map(m=>`<div class="mi${m===v?" on":""}" data-v="${esc(m)}">${esc(m)}</div>`).join(""):`<div class="mi none">Tidak ada yang cocok. Pilih <b>Lain-Lain</b> untuk isi manual.</div>`)+`<div class="mi man${v==="Lain-Lain"?" on":""}" data-v="Lain-Lain">Lain-Lain <small>(isi manual)</small></div>`}
-function togMain(){$("f-mol").style.display=$("f-main").value==="Lain-Lain"?"":"none";renderMain()}
-$("mlist").addEventListener("click",e=>{const i=e.target.closest(".mi[data-v]");if(!i)return;$("f-main").value=i.dataset.v;togMain();if(i.dataset.v==="Lain-Lain")$("f-mo").focus()});
-$("mp-q").addEventListener("input",renderMain);
-function setMain(v){const o=MAINS.includes(v);$("f-main").value=o?v:(v?"Lain-Lain":"");$("f-mo").value=(!o&&v&&v!=="Lain-Lain")?v:"";$("mp-q").value="";togMain();setTimeout(()=>{const on=document.querySelector("#mlist .mi.on");on&&on.scrollIntoView({block:"nearest"})},60)}
+const MAINS=["Approval Drawing","Pembuatan RAB","Pembuatan BOQ","Pembuatan AHS","Rapat Koordinasi","Pembuatan RAB dan KAK konsultan survei dan soil investigasi","Pelaksanaan Survei serta review hasil survei","Pelaksanaan Soil investigasi","Survei & pengolahan data hasil survei","Soil Investigasi & Review Hasil Soil Investigasi","Survei bersama UID untuk scoring lokasi Proyek","Laporan kinerja bulanan","Update proyek prakonstruksi dan rapat checkpoint dengan DIV PMO","Update presentasi dan rapat permintaan PLN Pusat atau unit lain","Pembuatan RAB untuk KKP","Pembuatan dokumen Perencanaan","Mengisi anggaran e-budget","Weekly Performance Review","Monthly Performance Audit Dialogue","Menyiapkan dan meeting GRC","Check point kerawanan sistem Kalimantan","Input DAMS CP","RKAP","RJPP UIP KLB","Pengawasan Konsultan Survey","Pembuatan RAB & Desk Study"];
+let mpOpen=false,mpTyping=false,mpAct=0;
+const mainLabel=()=>{const v=$("f-main").value;return v==="Lain-Lain"?"Lain-Lain (isi manual)":v};
+const hlM=(m,q)=>{const i=q?m.toLowerCase().indexOf(q):-1;return i<0?esc(m):esc(m.slice(0,i))+"<mark>"+esc(m.slice(i,i+q.length))+"</mark>"+esc(m.slice(i+q.length))};
+function mpList(){const q=mpTyping?$("mp-q").value.trim().toLowerCase():"";return{q,L:MAINS.filter(m=>m.toLowerCase().includes(q))}}
+function renderMain(){const v=$("f-main").value,{q,L}=mpList();mpAct=Math.min(mpAct,L.length);
+ $("mlist").innerHTML=(L.length?L.map((m,i)=>`<div class="mi${m===v?" on":""}${i===mpAct?" act":""}" data-v="${esc(m)}">${hlM(m,q)}</div>`).join(""):`<div class="mi none">Tidak ada yang cocok — pilih <b>Lain-Lain</b> di bawah</div>`)+`<div class="mi man${v==="Lain-Lain"?" on":""}${mpAct===L.length?" act":""}" data-v="Lain-Lain">Lain-Lain <small>isi manual</small></div>`;
+ $("mlist").hidden=!mpOpen;$("mp-q").setAttribute("aria-expanded",mpOpen);$("cb").classList.toggle("has",!!v);
+ if(mpOpen){const a=$("mlist").querySelector(".act");a&&a.scrollIntoView({block:"nearest"})}}
+function mpShow(o){mpOpen=o;if(!o){mpTyping=false;$("mp-q").value=mainLabel()}renderMain()}
+function pickMain(v){$("f-main").value=v;mpTyping=false;mpOpen=false;togMain();if(v==="Lain-Lain")$("f-mo").focus();else $("mp-q").blur()}
+function togMain(){$("f-mol").style.display=$("f-main").value==="Lain-Lain"?"":"none";if(!(mpOpen&&mpTyping))$("mp-q").value=mainLabel();renderMain()}
+$("mp-q").addEventListener("focus",()=>{if(!mpOpen){mpOpen=true;mpTyping=false;mpAct=0;renderMain();$("mp-q").select()}});
+$("mp-q").addEventListener("click",()=>{if(!mpOpen){mpOpen=true;mpTyping=false;renderMain()}});
+$("mp-q").addEventListener("input",()=>{mpOpen=true;mpTyping=true;mpAct=0;renderMain()});
+$("mp-q").addEventListener("keydown",e=>{const{L}=mpList(),n=L.length+1;
+ if(e.key==="ArrowDown"){e.preventDefault();if(!mpOpen){mpOpen=true;mpTyping=false}else mpAct=(mpAct+1)%n;renderMain()}
+ else if(e.key==="ArrowUp"){e.preventDefault();mpAct=(mpAct-1+n)%n;renderMain()}
+ else if(e.key==="Enter"&&mpOpen){e.preventDefault();pickMain(mpAct<L.length?L[mpAct]:"Lain-Lain")}
+ else if(e.key==="Escape"&&mpOpen){e.stopPropagation();e.preventDefault();mpShow(false)}
+ else if(e.key==="Tab"&&mpOpen)mpShow(false)});
+$("mlist").addEventListener("mousedown",e=>{const i=e.target.closest(".mi[data-v]");if(i){e.preventDefault();pickMain(i.dataset.v)}});
+$("mlist").addEventListener("mousemove",e=>{const i=e.target.closest(".mi[data-v]");if(!i)return;const all=[...$("mlist").querySelectorAll(".mi[data-v]")],k=all.indexOf(i);if(k!==mpAct){all[mpAct]&&all[mpAct].classList.remove("act");i.classList.add("act");mpAct=k}});
+$("cb-x").addEventListener("mousedown",e=>{e.preventDefault();$("f-main").value="";$("f-mo").value="";mpTyping=false;mpOpen=false;togMain();$("mp-q").focus()});
+document.addEventListener("mousedown",e=>{if(mpOpen&&!e.target.closest("#cb"))mpShow(false)});
+function setMain(v){const o=MAINS.includes(v);$("f-main").value=o?v:(v?"Lain-Lain":"");$("f-mo").value=(!o&&v&&v!=="Lain-Lain")?v:"";mpOpen=false;mpTyping=false;togMain()}
 function getMain(){const m=$("f-main").value;return m==="Lain-Lain"?($("f-mo").value.trim()||"Lain-Lain"):m}
 function avatar(n){return `<span class="av">${esc(ini(n||"?"))}</span>`}
 function selPics(){return[...new Set([...document.querySelectorAll("#f-ps input:checked")].map(c=>c.value).concat($("f-pic").value.split(/[,;]/).map(s=>s.trim()).filter(Boolean)))]}
@@ -353,7 +376,7 @@ function renderR(){
   const days=RDAYS(r),f=RFQ(r),sch=f==="W"?"Setiap hari "+days.map(n=>WD[n]).join(" & "):f==="Y"?"Tanggal "+days.join(" & ")+" pada bulan "+(RMON(r).map(m=>MN[m-1]).join(", ")||"setiap bulan"):"Setiap tanggal "+days.join(" & ")+" tiap bulan";
   let st="";
   if(s.k==="late")st=`<span>⚠ Terlambat ${s.n} hari · tenggat ${fmtW(s.d)}${s.more?` · +${s.more} periode lain`:""}</span>${canWrite?`<button class="btn" data-act="rdone" data-v="${esc(r.id)}" data-p="${s.all.join(",")}">${s.more?"✓ Tandai semua selesai":"✓ Tandai selesai"}</button>`:""}`;
-  else if(s.k==="done")st=`<span>✓ Selesai${s.d?` · berikutnya ${fmtW(s.d)}`:""}</span>${canWrite&&s.ld?`<button class="btn g" data-act="rundo" data-v="${esc(r.id)}" data-p="${s.ld}">Batalkan</button>`:""}`;
+  else if(s.k==="done")st=`<span>${s.d?`Berikutnya ${fmtW(s.d)}`:"Tidak ada jadwal berikutnya"}</span>${canWrite&&s.ld?`<button class="btn g" data-act="rundo" data-v="${esc(r.id)}" data-p="${s.ld}">Batalkan</button>`:""}`;
   else st=`<span>Tenggat ${fmtW(s.d)} · ${s.n===0?"Hari ini":"H-"+s.n}</span>${canWrite&&s.n<=45?`<button class="btn" data-act="rdone" data-v="${esc(r.id)}" data-p="${s.d}">✓ Tandai selesai</button>`:""}`;
   const dots=s.hist.map(h=>`<s class="${h.ok?"":h.m?"m":"f"}" title="${fmt(h.d)} · ${h.ok?"selesai":h.m?"terlewat":"belum"}"></s>`).join("");
   return `<div class="card rc ${s.k}"><div class="hd"><b>${esc(r.name)}</b>${canWrite?`<button class="btn g" data-act="redit" data-v="${esc(r.id)}">Ubah</button>`:""}</div>
@@ -396,7 +419,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
 function openDlg(id){
  editId=id;const j=id?jobs.find(x=>x.id===id):{name:"",sub:fsub!=="Semua"?fsub:SUBS[0],pic:"",prog:0,st:"On Track",issue:"",due:""};
  $("mt").textContent=id?"Ubah Pekerjaan":"Tambah Pekerjaan";$("f-name").value=j.name;setSubs(j.sub);$("f-ps").innerHTML="";$("f-pic").value=j.pic||"";fillPics();$("f-st").value=j.st;setDue(j.due);setDt("f-s",j.start);setMain(j.main);$("f-em").value="";$("f-nt").checked=!id;showEm();$("f-pr").value=j.prog;$("pv").textContent=j.prog+"%";$("f-is").value=j.issue||"";
- $("bdel").style.display=id?"":"none";$("dlg").showModal();
+ $("bdel").style.display=id?"":"none";$("dlg").showModal();if(document.activeElement)document.activeElement.blur();mpShow(false);
 }
 async function save(){
  const due=getDue();if(due===null){toast("Due Date tidak lengkap atau tidak valid");return}
