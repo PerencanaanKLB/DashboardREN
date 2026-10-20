@@ -157,7 +157,7 @@ main{padding-top:8px}main>.wrap{gap:8px}
 .pics{flex-direction:row;flex-wrap:wrap;gap:2px 10px;max-width:220px}.pics .pic{gap:4px;font-size:12px;font-weight:500}.pics .av{width:18px;height:18px;font-size:9px}.pics .em{margin:0;font-size:10px}
 .rc .pp{gap:3px 10px;font-size:12px}.rc .pp .pic{gap:4px}.rc .pp .av{width:18px;height:18px;font-size:9px}
 @media(min-width:801px){
- th:nth-child(1),td:nth-child(1){width:132px;max-width:142px}
+ th:nth-child(1),td:nth-child(1){width:150px;max-width:160px}
  td:nth-child(1) .tag.mn .mt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
  td:nth-child(1) .tag.mn{display:block;box-sizing:border-box;width:100%;font-size:9.5px;font-weight:500;padding:4px 6px;white-space:normal;overflow-wrap:anywhere;text-align:center;line-height:1.25;color:var(--mut);border-radius:7px}
  th:nth-child(1){font-size:10px}
@@ -165,6 +165,17 @@ main{padding-top:8px}main>.wrap{gap:8px}
 }
 .dgrid.wk{grid-template-columns:repeat(7,1fr)}.dgrid.mo{grid-template-columns:repeat(6,1fr)}.dgrid.wk span,.dgrid.mo span{padding:8px 0;font-size:12.5px}
 .fqh{font-size:12px;color:var(--mut);margin:6px 0 0;line-height:1.5}
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap}th.sortable:hover{color:var(--brand)}th.sorted{color:var(--brand)}th .ar{font-size:9px;margin-left:5px}
+#fsort{max-width:210px}
+.mpick{border:1px solid #d6dde8;border-radius:12px;overflow:hidden;background:#fff;margin-top:6px}
+.mpick .mq{border:0;border-bottom:1px solid var(--line);border-radius:0;width:100%;padding:9px 12px;font-size:13px;box-sizing:border-box;background:var(--soft)}
+.mlist{max-height:176px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.mi{display:flex;gap:9px;align-items:flex-start;padding:8px 12px;font-size:13px;line-height:1.35;cursor:pointer;border-bottom:1px solid #f0f3f8;font-weight:500}
+.mi::before{content:"";flex:none;width:12px;height:12px;border-radius:50%;border:2px solid #b9c4d4;margin-top:2px;box-sizing:border-box}
+.mi:hover{background:var(--soft)}.mi.on{background:#eef4fc;font-weight:700;color:var(--brand)}.mi.on::before{border-color:var(--p);background:var(--p);box-shadow:inset 0 0 0 2px #fff}
+.mi.man{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);border-bottom:0}.mi.man.on{background:#eef4fc}.mi.none{cursor:default;color:var(--mut)}.mi.none::before{display:none}
+.mi small{font-weight:400;opacity:.7}
+
 .band{grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:start}.sc .pl{display:none}.band .subs .card{padding:6px 12px 7px}
 .iss{font-size:12.5px}.iss.none{white-space:nowrap}
 @media(min-width:801px){td,th{padding-left:9px;padding-right:9px}td{font-size:14px}td:nth-child(2){min-width:210px}table{min-width:1040px}.pg{min-width:110px}}
@@ -182,7 +193,7 @@ main{padding-top:8px}main>.wrap{gap:8px}
  <div class="lst"><div class="bar2"><div class="seg" id="seg"></div>
  <div class="tools">
   <input id="q" placeholder="Cari pekerjaan, PIC, atau issue…">
-  <select id="fpc"><option value="">Semua PIC</option></select>
+  <select id="fsort" title="Urutkan daftar"><option value="">Urut: Sub Bidang (default)</option><option value="prio:1">Urut: Prioritas (terlambat &amp; due terdekat)</option><option value="due:1">Urut: Due date terdekat</option><option value="due:-1">Urut: Due date terjauh</option><option value="prog:1">Urut: Progress terendah</option><option value="prog:-1">Urut: Progress tertinggi</option><option value="name:1">Urut: Nama A–Z</option><option value="name:-1">Urut: Nama Z–A</option><option value="start:-1">Urut: Mulai terbaru</option></select><select id="fpc"><option value="">Semua PIC</option></select>
   <select id="fst"><option>Semua Status</option><option>On Track</option><option>Berisiko</option><option>Terlambat</option><option>Selesai</option></select>
   <div class="dm"><button class="btn g" id="datab">Data ▾</button><div class="pop" id="datapop"><button class="btn g" data-act="imp" title="Impor dari CSV atau unduhan Google Sheet">Impor CSV</button><button class="btn g" data-act="exp">Ekspor CSV</button><button class="btn g" data-act="remind" title="Kirim email pengingat ke PIC yang tugasnya jatuh tempo dalam 3 hari atau terlambat">Kirim pengingat</button></div></div><input type="file" id="csvf" accept=".csv,text/csv,text/plain" hidden>
   <button class="btn" id="add" data-act="add">+ Tambah</button>
@@ -194,7 +205,8 @@ main{padding-top:8px}main>.wrap{gap:8px}
  <div class="note" id="note"></div>
 </div></main>
 <dialog id="dlg"><div class="mh" id="mt">Pekerjaan</div><div class="mb">
- <div class="r2"><label>Pekerjaan Utama<select id="f-main"><option value="">Pilih pekerjaan utama…</option><option>Approval Drawing</option><option>Pembuatan RAB</option><option>Pembuatan BOQ</option><option>Pembuatan AHS</option><option>Rapat Koordinasi</option><option>Lain-Lain</option></select></label><label id="f-mol" style="display:none">Sebutkan pekerjaan lain<input id="f-mo" placeholder="Isi manual"></label></div>
+ <div class="fl">Pekerjaan Utama <small>(cari atau gulir daftar)</small><input type="hidden" id="f-main"><div class="mpick"><input class="mq" id="mp-q" placeholder="Cari pekerjaan utama…" autocomplete="off"><div class="mlist" id="mlist"></div></div></div>
+ <label id="f-mol" style="display:none">Sebutkan pekerjaan lain<input id="f-mo" placeholder="Isi manual"></label>
  <label>Nama Pekerjaan<input id="f-name" placeholder="Isi manual"></label>
  <div class="r2"><div class="fl">Sub Bidang <small>(bisa lebih dari satu)</small><div id="f-sub" class="chks"></div></div><div class="fl">PIC <small>(bisa lebih dari satu · email terisi otomatis)</small><div id="f-ps" class="chks pc"></div><input id="f-pic" type="hidden"></div></div>
  <label style="display:none"><input id="f-em" type="email" autocomplete="off"></label><div class="hl2" id="f-emh"></div>
@@ -251,6 +263,27 @@ const open=j=>j.issue&&j.st!=="Selesai";
 function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2600)}
 const todayS=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
 function dueCell(j){let sub="",c="";if(j.due&&j.st!=="Selesai"){const n=Math.round((new Date(j.due+"T00:00:00")-new Date(todayS()+"T00:00:00"))/864e5);if(n<0){c=" over";sub="Lewat "+(-n)+" hari"}else if(n<=7){c=" soon";sub=n===0?"Hari ini":n+" hari lagi"}}return `<td class="dd${c}"><b>${fmt(j.due)}</b>${sub?`<div>${sub}</div>`:""}</td>`}
+
+let sortK="",sortD=1;try{const s=JSON.parse(localStorage.getItem("dash-sort3")||"null");if(s&&s.k!==undefined){sortK=s.k;sortD=s.d}}catch(e){}
+const STO={"Terlambat":0,"Berisiko":1,"On Track":2,"Selesai":3};
+const SKEY={main:j=>(j.main||"").toLowerCase(),name:j=>String(j.name||"").toLowerCase(),sub:j=>SUBS.indexOf(SB(j)[0]),pic:j=>PL(j).join(", ").toLowerCase(),prog:j=>+j.prog||0,st:j=>STO[j.st]??9,start:j=>j.start||"",due:j=>j.due||""};
+function prioKey(j){const T=todayS();if(j.st==="Selesai")return 9;const n=j.due?ddiff(j.due,T):999;return(j.st==="Terlambat"||n<0)?0:(j.st==="Berisiko"||n<=7)?1:2}
+function defCmp(a,b){return SUBS.indexOf(SB(a)[0])-SUBS.indexOf(SB(b)[0])||String(a.name).localeCompare(b.name)}
+function sortCmp(a,b){if(!sortK)return defCmp(a,b);
+ if(sortK==="prio"){const d=prioKey(a)-prioKey(b);if(d)return d;const x=a.due||"9999",y=b.due||"9999";return x<y?-1:x>y?1:defCmp(a,b)}
+ const f=SKEY[sortK],x=f(a),y=f(b);
+ if(sortK==="due"&&(a.st==="Selesai")!==(b.st==="Selesai"))return a.st==="Selesai"?1:-1;
+ if((sortK==="due"||sortK==="start")&&(!x||!y)){if(!x&&!y)return defCmp(a,b);return !x?1:-1}
+ const d=x<y?-1:x>y?1:0;return d*sortD||defCmp(a,b)}
+function setSort(k,d){sortK=k;sortD=d;try{localStorage.setItem("dash-sort3",JSON.stringify({k,d}))}catch(e){}render()}
+const SORTH=["main","name","sub","pic","prog","st","start","due"];
+function markSort(){document.querySelectorAll(".tw thead th").forEach((th,i)=>{const k=SORTH[i];if(!k)return;if(!th.dataset.k){th.dataset.k=k;th.classList.add("sortable");th.title="Klik untuk mengurutkan";th.innerHTML+='<span class="ar"></span>'}
+  th.querySelector(".ar").textContent=sortK===k?(sortD>0?"▲":"▼"):"";th.classList.toggle("sorted",sortK===k)});
+ const v=sortK?sortK+":"+sortD:"",s=$("fsort");let o=[...s.options].find(x=>x.value===v);const cu=s.querySelector("option[data-cu]");
+ if(!o&&v){if(cu)cu.remove();const n=document.createElement("option");n.value=v;n.dataset.cu="1";n.textContent="Urut: kolom "+({main:"Pekerjaan Utama",name:"Nama",sub:"Sub Bidang",pic:"PIC",prog:"Progress",st:"Status",start:"Tanggal Mulai",due:"Due Date"}[sortK]||sortK)+(sortD>0?" ▲":" ▼");s.appendChild(n)}else if(o&&cu&&cu.value!==v)cu.remove();
+ s.value=v}
+document.addEventListener("click",e=>{const th=e.target.closest("th[data-k]");if(!th)return;const k=th.dataset.k;if(sortK!==k)setSort(k,1);else if(sortD>0)setSort(k,-1);else setSort("",1)});
+document.addEventListener("change",e=>{if(e.target.id==="fsort"){const v=e.target.value;if(!v)setSort("",1);else{const[k,d]=v.split(":");setSort(k,+d)}}});
 function renderP(){
  const L=jobs,o=L.filter(open).length,r=L.filter(j=>j.st==="Terlambat"||j.st==="Berisiko").length;
  $("kpi").innerHTML=[["Total Pekerjaan",L.length,"di 3 sub bidang"],["Rata-rata Progress",avg(L)+"%","seluruh pekerjaan"],["Pekerjaan Selesai",L.filter(j=>j.st==="Selesai").length,"dari "+L.length+" pekerjaan"],["Issue Terbuka",o,r+" berisiko / terlambat"]]
@@ -259,7 +292,8 @@ function renderP(){
  $("seg").innerHTML=[["Semua",-1]].concat(SUBS.map((s,i)=>[s,i])).map(([s,i])=>`<button class="${fsub===s?"on":""}" data-act="subset" data-v="${s}">${i>=0?`<span class="dt" style="--c:${COL[i]}"></span>`:""}${s==="Semua"?"Semua Sub Bidang":s}<i>${s==="Semua"?L.length:L.filter(j=>SB(j).includes(s)).length}</i></button>`).join("");
  {const cur=$("fpc").value,ps=PN(L.filter(j=>fsub==="Semua"||SB(j).includes(fsub)));$("fpc").innerHTML=`<option value="">Semua PIC${fsub==="Semua"?"":" – "+fsub.replace("Perencanaan ","")}</option>`+ps.map(p=>`<option>${esc(p)}</option>`).join("");$("fpc").value=ps.includes(cur)?cur:""}
  const q=$("q").value.toLowerCase(),fs=$("fst").value,fp=$("fpc").value;
- const V=L.filter(j=>(fsub==="Semua"||SB(j).includes(fsub))&&(fs==="Semua Status"||j.st===fs)&&(!fp||PL(j).includes(fp))&&(j.name+j.pic+j.issue+(j.main||"")).toLowerCase().includes(q)).sort((a,b)=>SUBS.indexOf(SB(a)[0])-SUBS.indexOf(SB(b)[0])||a.name.localeCompare(b.name));
+ const V=L.filter(j=>(fsub==="Semua"||SB(j).includes(fsub))&&(fs==="Semua Status"||j.st===fs)&&(!fp||PL(j).includes(fp))&&(j.name+j.pic+j.issue+(j.main||"")).toLowerCase().includes(q)).sort(sortCmp);
+ markSort();
  $("tb").innerHTML=V.map(j=>{const i=SUBS.indexOf(SB(j)[0]);return `<tr><td>${j.main?`<span class="tag mn" title="${esc(j.main)}"><span class="mt">${esc(j.main)}</span></span>`:"-"}</td><td><div class="nm">${esc(j.name)}</div></td><td>${SB(j).map(s=>`<span class="tag sb" style="--c:${COL[SUBS.indexOf(s)]}">${esc(s)}</span>`).join(" ")}</td><td><div class="pics">${PL(j).map(p=>`<div class="pic">${avatar(p)}${esc(p)}${pics[p]?`<span class="em" title="Email PIC tersimpan">✉</span>`:""}</div>`).join("")||"-"}</div></td><td><div class="pg" style="--c:${COL[i]}"><div class="bar"><i style="width:${j.prog}%"></i></div><span>${j.prog}%</span></div></td><td><span class="tag st-${SC[j.st]}">${esc(j.st)}</span></td><td class="dd"><b>${fmt(j.start)}</b></td>${dueCell(j)}<td class="iss ${j.issue?"":"none"}">${j.issue?"⚠ "+esc(j.issue):"Tidak ada issue"}</td><td>${canWrite?`<button class="btn g" data-act="edit" data-v="${esc(j.id)}">Ubah</button>`:""}</td></tr>`}).join("");
  const em=$("empty");
  if(!loaded){em.style.display="block";em.textContent="Memuat data…"}
@@ -277,14 +311,18 @@ function setDt(p,v){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||""),y=m?m[1]:"";
 function getDt(p){const d=$(p+"d").value,m=$(p+"m").value,y=$(p+"y").value;if(!d&&!m&&!y)return"";if(!d||!m||!y)return null;
  if(new Date(+y,+m-1,+d).getMonth()!==+m-1)return null;return y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")}
 const setDue=v=>setDt("f-d",v),getDue=()=>getDt("f-d");
-const MAINS=["Approval Drawing","Pembuatan RAB","Pembuatan BOQ","Pembuatan AHS","Rapat Koordinasi"];
-function togMain(){$("f-mol").style.display=$("f-main").value==="Lain-Lain"?"":"none"}
-function setMain(v){const o=MAINS.includes(v);$("f-main").value=o?v:(v?"Lain-Lain":"");$("f-mo").value=(!o&&v&&v!=="Lain-Lain")?v:"";togMain()}
+const MAINS=["Approval Drawing","Pembuatan RAB","Pembuatan BOQ","Pembuatan AHS","Rapat Koordinasi","Pembuatan RAB dan KAK konsultan survei dan soil investigasi","Pelaksanaan Survei serta review hasil survei","Pelaksanaan Soil investigasi","Survei & pengolahan data hasil survei","Soil Investigasi & Review Hasil Soil Investigasi","Survei bersama UID untuk scoring lokasi Proyek","Laporan kinerja bulanan","Update proyek prakonstruksi dan rapat checkpoint dengan DIV PMO","Update presentasi dan rapat permintaan PLN Pusat atau unit lain","Pembuatan RAB untuk KKP","Pembuatan dokumen Perencanaan","Approval Drawing Renum","Mengisi anggaran e-budget","Weekly Performance Review","Monthly Performance Audit Dialogue","Menyiapkan dan meeting GRC","Check point kerawanan sistem Kalimantan","Input DAMS CP","RKAP","RJPP UIP KLB","Pengawasan Konsultan Survey","Pembuatan RAB & Desk Study"];
+function renderMain(){const v=$("f-main").value,q=$("mp-q").value.trim().toLowerCase(),L=MAINS.filter(m=>m.toLowerCase().includes(q));
+ $("mlist").innerHTML=(L.length?L.map(m=>`<div class="mi${m===v?" on":""}" data-v="${esc(m)}">${esc(m)}</div>`).join(""):`<div class="mi none">Tidak ada yang cocok. Pilih <b>Lain-Lain</b> untuk isi manual.</div>`)+`<div class="mi man${v==="Lain-Lain"?" on":""}" data-v="Lain-Lain">Lain-Lain <small>(isi manual)</small></div>`}
+function togMain(){$("f-mol").style.display=$("f-main").value==="Lain-Lain"?"":"none";renderMain()}
+$("mlist").addEventListener("click",e=>{const i=e.target.closest(".mi[data-v]");if(!i)return;$("f-main").value=i.dataset.v;togMain();if(i.dataset.v==="Lain-Lain")$("f-mo").focus()});
+$("mp-q").addEventListener("input",renderMain);
+function setMain(v){const o=MAINS.includes(v);$("f-main").value=o?v:(v?"Lain-Lain":"");$("f-mo").value=(!o&&v&&v!=="Lain-Lain")?v:"";$("mp-q").value="";togMain();setTimeout(()=>{const on=document.querySelector("#mlist .mi.on");on&&on.scrollIntoView({block:"nearest"})},60)}
 function getMain(){const m=$("f-main").value;return m==="Lain-Lain"?($("f-mo").value.trim()||"Lain-Lain"):m}
 function avatar(n){return `<span class="av">${esc(ini(n||"?"))}</span>`}
 function selPics(){return[...new Set([...document.querySelectorAll("#f-ps input:checked")].map(c=>c.value).concat($("f-pic").value.split(/[,;]/).map(s=>s.trim()).filter(Boolean)))]}
 function showEm(){const a=selPics();$("f-emh").textContent=!a.length?"":a.map(p=>p+(pics[p]?" ✉ "+pics[p]:" – belum ada email")).join(" · ")}
-$("f-main").onchange=togMain;$("f-pic").oninput=showEm;$("f-ps").onchange=showEm;
+$("f-pic").oninput=showEm;$("f-ps").onchange=showEm;
 
 function render(){renderP();renderR()}
 const pad2=n=>String(n).padStart(2,"0"),ymd=(y,m,d)=>y+"-"+pad2(m+1)+"-"+pad2(d),ddiff=(a,b)=>Math.round((new Date(a+"T00:00:00")-new Date(b+"T00:00:00"))/864e5);
