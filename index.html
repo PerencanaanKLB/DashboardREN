@@ -356,7 +356,7 @@ const fmtW=d=>d?(WD[new Date(d+"T00:00:00").getDay()||7]+", "+fmt(d)):"-";
 function occs(r,since){const T=todayS(),f=RFQ(r),days=RDAYS(r),out=new Set(),t0=new Date(T+"T00:00:00");
  if(f==="W"){for(let k=-70;k<=70;k++){const d=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()+k);if(days.includes(d.getDay()||7))out.add(ymd(d.getFullYear(),d.getMonth(),d.getDate()))}}
  else{const ms=f==="Y"&&RMON(r).length?RMON(r):null;for(let k=-8;k<=14;k++){const dt=new Date(t0.getFullYear(),t0.getMonth()+k,1),y=dt.getFullYear(),m=dt.getMonth(),last=new Date(y,m+1,0).getDate();if(ms&&!ms.includes(m+1))continue;days.forEach(d=>out.add(ymd(y,m,Math.min(d,last))))}}
- const s=since===undefined?r.since:since;return[...out].sort().filter(d=>!s||d>=s)}
+ let s=since===undefined?r.since:since;if(!/^\d{4}-\d\d-\d\d$/.test(String(s||"")))s="";return[...out].sort().filter(d=>!s||d>=s)}
 function rstat(r){const T=todayS(),O=occs(r),dn=d=>!!rlog[r.id+"|"+d],ow=RFQ(r)==="W"?21:60,od=O.filter(d=>d<T&&!dn(d)&&ddiff(T,d)<=ow),nx=O.find(d=>d>=T),ld=O.filter(d=>dn(d)).pop(),hist=O.filter(d=>d<=T).slice(-6).map(d=>({d,ok:dn(d),m:!dn(d)&&d<T}));
  if(od.length)return{k:"late",d:od[0],n:ddiff(T,od[0]),more:od.length-1,all:od,hist,ld,O};
  if(nx&&!dn(nx)){const n=ddiff(nx,T);return{k:n<=3?"soon":"ok",d:nx,n,hist,ld,O}}
