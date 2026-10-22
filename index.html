@@ -263,6 +263,7 @@ function normDue(v){
 const fmt=d=>{const x=d?new Date(d+"T00:00:00"):null;return x&&!isNaN(x)?x.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"}):"-"};
 const ini=n=>n.split(/\s+/).map(x=>x[0]).join("").slice(0,2).toUpperCase();
 const avg=a=>a.length?Math.round(a.reduce((s,j)=>s+j.prog,0)/a.length):0;
+const es=j=>j.st!=="Selesai"&&j.due&&j.due<todayS()?"Terlambat":j.st;
 const open=j=>j.issue&&j.st!=="Selesai";
 function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2600)}
 const todayS=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
@@ -270,8 +271,8 @@ function dueCell(j){let sub="",c="";if(j.due&&j.st!=="Selesai"){const n=Math.rou
 
 let sortK="",sortD=1;try{const s=JSON.parse(localStorage.getItem("dash-sort3")||"null");if(s&&s.k!==undefined){sortK=s.k;sortD=s.d}}catch(e){}
 const STO={"Terlambat":0,"Berisiko":1,"On Track":2,"Selesai":3};
-const SKEY={main:j=>(j.main||"").toLowerCase(),name:j=>String(j.name||"").toLowerCase(),sub:j=>SUBS.indexOf(SB(j)[0]),pic:j=>PL(j).join(", ").toLowerCase(),prog:j=>+j.prog||0,st:j=>STO[j.st]??9,start:j=>j.start||"",due:j=>j.due||""};
-function prioKey(j){const T=todayS();if(j.st==="Selesai")return 9;const n=j.due?ddiff(j.due,T):999;return(j.st==="Terlambat"||n<0)?0:(j.st==="Berisiko"||n<=7)?1:2}
+const SKEY={main:j=>(j.main||"").toLowerCase(),name:j=>String(j.name||"").toLowerCase(),sub:j=>SUBS.indexOf(SB(j)[0]),pic:j=>PL(j).join(", ").toLowerCase(),prog:j=>+j.prog||0,st:j=>STO[es(j)]??9,start:j=>j.start||"",due:j=>j.due||""};
+function prioKey(j){const T=todayS();if(j.st==="Selesai")return 9;const n=j.due?ddiff(j.due,T):999;return(es(j)==="Terlambat"||n<0)?0:(es(j)==="Berisiko"||n<=7)?1:2}
 function defCmp(a,b){return SUBS.indexOf(SB(a)[0])-SUBS.indexOf(SB(b)[0])||String(a.name).localeCompare(b.name)}
 function sortCmp(a,b){if(!sortK)return defCmp(a,b);
  if(sortK==="prio"){const d=prioKey(a)-prioKey(b);if(d)return d;const x=a.due||"9999",y=b.due||"9999";return x<y?-1:x>y?1:defCmp(a,b)}
@@ -289,16 +290,16 @@ function markSort(){document.querySelectorAll(".tw thead th").forEach((th,i)=>{c
 document.addEventListener("click",e=>{const th=e.target.closest("th[data-k]");if(!th)return;const k=th.dataset.k;if(sortK!==k)setSort(k,1);else if(sortD>0)setSort(k,-1);else setSort("",1)});
 document.addEventListener("change",e=>{if(e.target.id==="fsort"){const v=e.target.value;if(!v)setSort("",1);else{const[k,d]=v.split(":");setSort(k,+d)}}});
 function renderP(){
- const L=jobs,o=L.filter(open).length,r=L.filter(j=>j.st==="Terlambat"||j.st==="Berisiko").length;
+ const L=jobs,o=L.filter(open).length,r=L.filter(j=>es(j)==="Terlambat"||es(j)==="Berisiko").length;
  $("kpi").innerHTML=[["Total Pekerjaan",L.length,"di 3 sub bidang"],["Rata-rata Progress",avg(L)+"%","seluruh pekerjaan"],["Pekerjaan Selesai",L.filter(j=>j.st==="Selesai").length,"dari "+L.length+" pekerjaan"],["Issue Terbuka",o,r+" berisiko / terlambat"]]
  .map(k=>`<div class="card"><div class="k-l">${k[0]}</div><div class="k-v">${k[1]}</div><div class="k-n">${k[2]}</div></div>`).join("");
  $("subs").innerHTML=SUBS.map((s,i)=>{const a=L.filter(j=>SB(j).includes(s));return `<div class="card sc ${fsub===s?"on":""}" style="--c:${COL[i]}" data-act="sub" data-v="${s}"><div class="row"><b>${s}</b><span class="big">${avg(a)}%</span></div><div class="bar"><i style="width:${avg(a)}%"></i></div><div class="pl" title="PIC sub bidang ini">PIC: ${PN(a).map(esc).join(", ")||"-"}</div><div class="meta"><span>${a.length} pekerjaan</span><span>${a.filter(open).length} issue</span><span>${a.filter(j=>j.st==="Selesai").length} selesai</span></div></div>`}).join("");
  $("seg").innerHTML=[["Semua",-1]].concat(SUBS.map((s,i)=>[s,i])).map(([s,i])=>`<button class="${fsub===s?"on":""}" data-act="subset" data-v="${s}">${i>=0?`<span class="dt" style="--c:${COL[i]}"></span>`:""}${s==="Semua"?"Semua Sub Bidang":s}<i>${s==="Semua"?L.length:L.filter(j=>SB(j).includes(s)).length}</i></button>`).join("");
  {const cur=$("fpc").value,ps=PN(L.filter(j=>fsub==="Semua"||SB(j).includes(fsub)));$("fpc").innerHTML=`<option value="">Semua PIC${fsub==="Semua"?"":" – "+fsub.replace("Perencanaan ","")}</option>`+ps.map(p=>`<option>${esc(p)}</option>`).join("");$("fpc").value=ps.includes(cur)?cur:""}
  const q=$("q").value.toLowerCase(),fs=$("fst").value,fp=$("fpc").value;
- const V=L.filter(j=>(fsub==="Semua"||SB(j).includes(fsub))&&(fs==="Semua Status"||j.st===fs)&&(!fp||PL(j).includes(fp))&&(j.name+j.pic+j.issue+(j.main||"")).toLowerCase().includes(q)).sort(sortCmp);
+ const V=L.filter(j=>(fsub==="Semua"||SB(j).includes(fsub))&&(fs==="Semua Status"||es(j)===fs)&&(!fp||PL(j).includes(fp))&&(j.name+j.pic+j.issue+(j.main||"")).toLowerCase().includes(q)).sort(sortCmp);
  markSort();
- $("tb").innerHTML=V.map(j=>{const i=SUBS.indexOf(SB(j)[0]);return `<tr><td>${j.main?`<span class="tag mn" title="${esc(j.main)}"><span class="mt">${esc(j.main)}</span></span>`:"-"}</td><td><div class="nm">${esc(j.name)}</div></td><td>${SB(j).map(s=>`<span class="tag sb" style="--c:${COL[SUBS.indexOf(s)]}">${esc(s)}</span>`).join(" ")}</td><td><div class="pics">${PL(j).map(p=>`<div class="pic">${avatar(p)}${esc(p)}${pics[p]?`<span class="em" title="Email PIC tersimpan">✉</span>`:""}</div>`).join("")||"-"}</div></td><td><div class="pg" style="--c:${COL[i]}"><div class="bar"><i style="width:${j.prog}%"></i></div><span>${j.prog}%</span></div></td><td><span class="tag st-${SC[j.st]}">${esc(j.st)}</span></td><td class="dd"><b>${fmt(j.start)}</b></td>${dueCell(j)}<td class="iss ${j.issue?"":"none"}">${j.issue?"⚠ "+esc(j.issue):"Tidak ada issue"}</td><td>${canWrite?`<button class="btn g" data-act="edit" data-v="${esc(j.id)}">Ubah</button>`:""}</td></tr>`}).join("");
+ $("tb").innerHTML=V.map(j=>{const i=SUBS.indexOf(SB(j)[0]);return `<tr><td>${j.main?`<span class="tag mn" title="${esc(j.main)}"><span class="mt">${esc(j.main)}</span></span>`:"-"}</td><td><div class="nm">${esc(j.name)}</div></td><td>${SB(j).map(s=>`<span class="tag sb" style="--c:${COL[SUBS.indexOf(s)]}">${esc(s)}</span>`).join(" ")}</td><td><div class="pics">${PL(j).map(p=>`<div class="pic">${avatar(p)}${esc(p)}${pics[p]?`<span class="em" title="Email PIC tersimpan">✉</span>`:""}</div>`).join("")||"-"}</div></td><td><div class="pg" style="--c:${COL[i]}"><div class="bar"><i style="width:${j.prog}%"></i></div><span>${j.prog}%</span></div></td><td><span class="tag st-${SC[es(j)]}">${esc(es(j))}</span></td><td class="dd"><b>${fmt(j.start)}</b></td>${dueCell(j)}<td class="iss ${j.issue?"":"none"}">${j.issue?"⚠ "+esc(j.issue):"Tidak ada issue"}</td><td>${canWrite?`<button class="btn g" data-act="edit" data-v="${esc(j.id)}">Ubah</button>`:""}</td></tr>`}).join("");
  const em=$("empty");
  if(!loaded){em.style.display="block";em.textContent="Memuat data…"}
  else if(!V.length){em.style.display="block";em.innerHTML=L.length?"Tidak ada pekerjaan yang cocok dengan filter.":`Belum ada data pekerjaan.${canWrite?`<br><br><button class="btn" data-act="imp">Impor CSV</button> <button class="btn g" data-act="add">+ Tambah Pekerjaan</button>`:""}`}
