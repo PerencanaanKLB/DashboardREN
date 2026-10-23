@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Dashboard Monitoring Pekerjaan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link id="fnt" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
 <style>
 :root{--gx:clamp(10px,2.5vw,.5cm);color-scheme:light;--bg:#fff;--card:#fff;--ink:#0F1B2D;--mut:#5B6B82;--line:#E3E8F0;--brand:#0B3C6D;--acc:#0891B2;--soft:#F3F5F8;
 --on:#059669;--onb:#D1FAE5;--risk:#B45309;--riskb:#FEF3C7;--late:#DC2626;--lateb:#FEE2E2;--done:#2563EB;--doneb:#DBEAFE;
@@ -237,6 +238,26 @@ html[data-skin=soft] .mlist{border:0;border-radius:18px;box-shadow:var(--shd)}
 html[data-skin=soft] #sw,html[data-skin=soft] .th .pop .cu{display:none}
 .sk{display:flex;gap:6px;margin-bottom:12px}.sk button{flex:1;font:inherit;font-weight:700;font-size:12.5px;padding:8px 6px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}.sk button.on{background:var(--btn);color:var(--btnt);border-color:transparent}
 .sw2{display:none;grid-template-columns:repeat(3,1fr);gap:8px}html[data-skin=soft] .sw2{display:grid}html[data-skin=soft] .sw{display:none}.sw2 button{border:3px solid transparent;border-radius:12px;height:44px;cursor:pointer;background:linear-gradient(120deg,var(--g1),var(--g2));font:700 10.5px inherit;font-family:inherit;color:#3A2A24;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px}.sw2 button.on{border-color:var(--ink)}
+
+/* ===== Bentuk lembut (berlaku di Standar & Soft Pastel) ===== */
+html:not([data-skin=soft]){--bg:#EEF2F8;--shd:8px 8px 20px rgba(110,130,160,.22),-6px -6px 16px rgba(255,255,255,.95);--shs:4px 4px 10px rgba(110,130,160,.2),-3px -3px 8px rgba(255,255,255,.95)}
+body{font-family:"Nunito",Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{z-index:50}
+.card{border-radius:22px;border-color:transparent;box-shadow:var(--shd)}
+html:not([data-skin=soft]) .band .kpi .card,html:not([data-skin=soft]) #rt .kpi .card{border-top:0;box-shadow:var(--shd),inset 0 3px 0 var(--p)}
+html:not([data-skin=soft]) .sc{border-top:0;box-shadow:var(--shd),inset 0 3px 0 var(--c)}
+.btn{border-radius:99px;box-shadow:var(--shs)}
+.seg button,.tabs button{border-color:transparent;border-radius:99px;box-shadow:var(--shs)}
+.vt{border-radius:99px;box-shadow:var(--shs);border-color:transparent}
+input,select,textarea{border-radius:16px;border-color:transparent;box-shadow:inset 2px 2px 6px rgba(110,130,160,.2),inset -2px -2px 5px rgba(255,255,255,.95)}
+input[type=checkbox],input[type=radio],input[type=range],input[type=color]{box-shadow:none;border-radius:revert}
+.tag,.bar,.bar i,.pill{border-radius:99px}
+.bar{box-shadow:inset 1px 1px 3px rgba(110,130,160,.25)}
+.tw,.lst .tw{border-radius:22px}
+dialog{border-radius:26px;border-color:transparent;box-shadow:0 24px 60px -20px rgba(40,60,90,.45)}
+.pop,.mlist{border-radius:20px;border-color:transparent;box-shadow:var(--shd)}
+.rc .stt,.pc .stt{border-radius:16px}
+.pop{max-height:calc(100dvh - 96px);overflow-y:auto}
 </style>
 </head>
 <body>
